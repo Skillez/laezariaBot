@@ -2,6 +2,7 @@
 
 1. Major changes
 - Revised system of command permissions.
+- Webhook system rebuilt, now automatically generates webhook on the log channels if it is missing.
 - The commands were cleared from unnecessary code and updated to work with the new design.
 - A help command rebuilt into a dynamic system.
 
