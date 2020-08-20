@@ -1,7 +1,7 @@
 module.exports.help = {
     name: "uptime",
     description: "Shows uptime of the bot.",
-    type: "Public",
+    type: "public",
     usage: "Type the command without any arguments"
 };
 

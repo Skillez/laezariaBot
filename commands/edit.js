@@ -4,7 +4,7 @@ const config = require("../bot-settings.json");
 module.exports.help = {
     name: "edit",
     description: "Modifies the bot messages.",
-    type: "Manager",
+    type: "manager",
     usage: `ℹ️ Format: **${config.BotPrefix}edit messageID contentToReplace**\n\nℹ️ Example: ${config.BotPrefix}edit 701686429289414696 I like trains`
 };
 

@@ -4,7 +4,7 @@ const config = require("../bot-settings.json");
 module.exports.help = {
     name: "dm",
     description: "Sends a direct message through the bot.",
-    type: "Captain",
+    type: "captain",
     usage: `ℹ️ Format: **${config.BotPrefix}dm userID/mention messageToSend**\n\nℹ️ Examples:\n${config.BotPrefix}dm ${config.BotOwnerID} Hello 👋\n${config.BotPrefix}dm @mention Hello 👋`
 };
 

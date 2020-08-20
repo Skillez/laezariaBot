@@ -3,7 +3,7 @@ const config = require("../bot-settings.json");
 module.exports.help = {
     name: "dice",
     description: "Rolls the dice.",
-    type: "Public",
+    type: "public",
     usage: `ℹ️ Format: **${config.BotPrefix}dice sides**\n\nℹ️ Example: ${config.BotPrefix}dice 20`
 };
 

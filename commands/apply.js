@@ -4,7 +4,7 @@ const config = require("../bot-settings.json");
 module.exports.help = {
     name: "apply",
     description: "The official way to join our club with an interactive system.",
-    type: "Public",
+    type: "public",
     usage: "Type the command and follow instructions."
 };
 

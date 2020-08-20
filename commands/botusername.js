@@ -4,7 +4,7 @@ const config = require("../bot-settings.json");
 module.exports.help = {
     name: "botusername",
     description: "Modifies the bot username.",
-    type: "Owner",
+    type: "owner",
     usage: `ℹ️ Format: **${config.BotPrefix}botusername userName(2-32 characters)**\n\nℹ️ Example: ${config.BotPrefix}botusername LaezBot`
 };
 

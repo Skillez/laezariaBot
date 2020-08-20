@@ -4,7 +4,7 @@ const config = require("../bot-settings.json");
 module.exports.help = {
     name: "botstatus",
     description: "Temporarily sets a new status for the bot.",
-    type: "Manager",
+    type: "manager",
     usage: `ℹ️ Format: **${config.BotPrefix}botstatus statusType messageToSet**\n\nAvailable statusType options:  \`\`\`less\n[1] PLAYING\n[2] WATCHING\n[3] LISTENING\n[4] STREAMING\n[5] CLEAR\`\`\`\nℹ️ Examples:\n${config.BotPrefix}botstatus playing with pp\n${config.BotPrefix}botstatus watching youtube\n${config.BotPrefix}listening spotify\n${config.BotPrefix}botstatus streaming twitchUsername visit my cool stream\n${config.BotPrefix}botstatus clear`
 };
 

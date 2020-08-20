@@ -4,7 +4,7 @@ const config = require("../bot-settings.json");
 module.exports.help = {
     name: "status",
     description: "Shows some information about the user.",
-    type: "Public",
+    type: "public",
     usage: `ℹ️ Format: **${config.BotPrefix}status userID/mention**\n\nℹ️ Examples:\n${config.BotPrefix}status ${config.BotOwnerID}\n${config.BotPrefix}status @mention`
 };
 

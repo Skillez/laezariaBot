@@ -24,7 +24,7 @@ bot.on("message", async message => {
     if (cmdFile) {
         removeUserLastMessage(message.author);
 
-        switch (cmdFile.help.type.toLowerCase()) {
+        switch (cmdFile.help.type) {
             case "owner": {
                 if (message.author.id === config.BotOwnerID) return cmdFile.run(bot, message, args);
                 else return message.reply(`You have insufficient permissions!‏‏‎\nOnly the **bot owner** can use **${config.BotPrefix}${cmdFile.help.name}** command!`)

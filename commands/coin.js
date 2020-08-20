@@ -1,7 +1,7 @@
 module.exports.help = {
     name: "coin",
     description: "Flips a coin",
-    type: "Public",
+    type: "public",
     usage: "Type the command without any arguments."
 };
 

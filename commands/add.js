@@ -1,7 +1,7 @@
 module.exports.help = {
     name: "add",
     description: "Test command to emit a new member message.",
-    type: "Owner",
+    type: "owner",
     usage: "Type the command without any arguments."
 };
 

@@ -1,7 +1,7 @@
 module.exports.help = {
     name: "del",
     description: "Test command to emit member left message.",
-    type: "Owner",
+    type: "owner",
     usage: "Type the command without any arguments."
 };
 

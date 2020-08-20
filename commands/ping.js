@@ -1,7 +1,7 @@
 module.exports.help = {
     name: "ping",
     description: "Pong!",
-    type: "Public",
+    type: "public",
     usage: "Type the command without any arguments."
 };
 

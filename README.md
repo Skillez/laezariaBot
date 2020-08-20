@@ -1,4 +1,4 @@
-# **v1.3** Update!
+# Laezaria Discord Bot**v1.3a** Update!
 
 1. Major changes
 - Revised system of command permissions.

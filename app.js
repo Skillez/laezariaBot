@@ -1,11 +1,12 @@
 const Discord = require('discord.js');
+const fs = require('fs');
 const config = require("./bot-settings.json");
 require('console-stamp')(console, 'dd/mm/yyyy - HH:MM:ss');
 
 const bot = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 
 // define current bot version
-const BotVersion = '1.3';
+const BotVersion = '1.3a';
 
 // define global embed color
 const embedColors = {
@@ -35,9 +36,36 @@ const LaezariaIconURL = 'https://skillez.eu/images/discord/laezicon.png'
 
 // bot.setMaxListeners(25);
 
-// LOAD COMMANDS AND EVENTS
+// Load command and events
 bot.commands = new Discord.Collection();
-require('./functions')(bot);
+
+fs.readdir('./events/', (err, files) => {
+	if (err) console.error(err);
+
+	let jsfiles = files.filter(f => f.split('.').pop() === 'js');
+	if (jsfiles.length <= 0) return console.log('▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\nThere are no events to load...\n\n');
+
+	console.log(`\n▬▬▬▬▬▬▬▬ LOADED EVENTS (${jsfiles.length}) ▬▬▬▬▬▬▬▬`);
+	jsfiles.forEach((f, i) => {
+		require(`./events/${f}`);
+		console.log(`${i + 1}: ${f}`);
+	});
+});
+
+fs.readdir('./commands/', (err, files) => {
+	if (err) console.error(err);
+
+	let jsfiles = files.filter(f => f.split('.').pop() === 'js');
+	if (jsfiles.length <= 0) return console.log('\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\nThere are no commands to load...\n\n');
+
+	console.log(`\n▬▬▬▬▬▬▬▬ LOADED COMMANDS (${jsfiles.length}) ▬▬▬▬▬▬▬▬`);
+	jsfiles.forEach((f, i) => {
+
+		let props = require(`./commands/${f}`);
+		console.log(`${i + 1}: ${props.help.type} - ${f}`);
+		bot.commands.set(props.help.name, props);
+	});
+});
 
 module.exports = {
 	bot: bot, // bot client

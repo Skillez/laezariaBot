@@ -4,7 +4,7 @@ const config = require("../bot-settings.json");
 module.exports.help = {
     name: "help",
     description: "List all of commands.",
-    type: "Public",
+    type: "public",
     usage: `ℹ️ Format: **${config.BotPrefix}help commandName**\n\nℹ️ Examples:\n${config.BotPrefix}help\n${config.BotPrefix}help apply`
 };
 
@@ -16,17 +16,17 @@ module.exports.run = async (bot, message, args) => {
 
     if (args) {
         if (getCommand(args[0])) {
-            return message.channel.send(`Help for the **${config.BotPrefix}${args[0]}** command:\nAccess Level: _${getCommand(args[0]).help.type}_\nDescription: ${getCommand(args[0]).help.description}\n\nUsage:\n${getCommand(args[0]).help.usage}`)
+            return message.channel.send(`Help for the **${config.BotPrefix}${args[0]}** command:\nAccess Level: __${getCommand(args[0]).help.type.toUpperCase()}__\nDescription: ${getCommand(args[0]).help.description}\n\nUsage:\n${getCommand(args[0]).help.usage}`)
                 .then(helpMessage => messageRemoverWithReact(helpMessage, message.author))
                 .catch(() => { return });
         }
     }
 
-    const ownerCommands = await getCommands().filter(command => command.help.type.toLowerCase().includes('owner')).map(command => `**${command.help.name}**    ${command.help.description}`).join('\n');
-    const managerCommands = await getCommands().filter(command => command.help.type.toLowerCase().includes('manager')).map(command => `**${command.help.name}**    ${command.help.description}`).join('\n');
-    const captainCommands = await getCommands().filter(command => command.help.type.toLowerCase().includes('captain')).map(command => `**${command.help.name}**    ${command.help.description}`).join('\n');
-    const publicCommands = await getCommands().filter(command => command.help.type.toLowerCase().includes('public')).map(command => `**${command.help.name}**    ${command.help.description}`).join('\n');
-    const disabledCommands = await getCommands().filter(command => command.help.type.toLowerCase().includes('disabled')).map(command => `**${command.help.name}**    ${command.help.description}`).join('\n');
+    const ownerCommands = await getCommands().filter(command => command.help.type.includes('owner')).map(command => `**${command.help.name}**    ${command.help.description}`).join('\n');
+    const managerCommands = await getCommands().filter(command => command.help.type.includes('manager')).map(command => `**${command.help.name}**    ${command.help.description}`).join('\n');
+    const captainCommands = await getCommands().filter(command => command.help.type.includes('captain')).map(command => `**${command.help.name}**    ${command.help.description}`).join('\n');
+    const publicCommands = await getCommands().filter(command => command.help.type.includes('public')).map(command => `**${command.help.name}**    ${command.help.description}`).join('\n');
+    const disabledCommands = await getCommands().filter(command => command.help.type.includes('disabled')).map(command => `**${command.help.name}**    ${command.help.description}`).join('\n');
 
     if (!ownerCommands) managerCommands = 'There are no owner commands.';
     if (!managerCommands) managerCommands = 'There are no manager commands.';

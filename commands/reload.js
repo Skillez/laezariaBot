@@ -4,7 +4,7 @@ const config = require("../bot-settings.json");
 module.exports.help = {
     name: "reload",
     description: "Reloads or load new commands.",
-    type: "Owner",
+    type: "owner",
     usage: `ℹ️ Format: **${config.BotPrefix}reload commandName**\n\nℹ️ Example: ${config.BotPrefix}reload apply`
 };
 

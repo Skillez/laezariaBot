@@ -4,7 +4,7 @@ const config = require("../bot-settings.json");
 module.exports.help = {
     name: "vote",
     description: "Starts a simple yea/nah/dont know vote.",
-    type: "Captain",
+    type: "captain",
     usage: `ℹ️ Format: **${config.BotPrefix}vote your question**\n\nℹ️ Example: ${config.BotPrefix}vote LaezBot is the best?`
 };
 

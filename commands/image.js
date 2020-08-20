@@ -4,7 +4,7 @@ const config = require("../bot-settings.json");
 module.exports.help = {
     name: "image",
     description: "Posts an image using the bot.",
-    type: "Manager",
+    type: "manager",
     usage: `ℹ️ Format: **${config.BotPrefix}image imageURL messageText(optional)**\n\nℹ️ imageURL requirements:\n• Starts with: http or https\n• Ends with: png, jpg, gif or jpeg\n\nℹ️ Examples:\n${config.BotPrefix}image laezaria\n${config.BotPrefix}image <https://skillez.eu/images/discord/laezicon.png>\n${config.BotPrefix}image <https://i.imgur.com/10OGBDT.png> Laezaria Server Icon`
 };
 

@@ -4,7 +4,7 @@ const config = require("../bot-settings.json");
 module.exports.help = {
     name: "color",
     description: "Shows embed with provided hexCode color.",
-    type: "Public",
+    type: "public",
     usage: `ℹ️ Format: **${config.BotPrefix}color #hexCode**\nColor Picker: <https://htmlcolorcodes.com/color-picker>\n\nℹ️ Example: ${config.BotPrefix}color #0095ff`
 };
 
