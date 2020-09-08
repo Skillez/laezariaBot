@@ -24,7 +24,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                         .setDescription(`${user.tag}(${user}) reacted with ${reaction.emoji}`)
                         .setFooter(`ID: ${user.id}`)
                         .setTimestamp()
-                    sendEmbedLog(embed_information_react_log, config.BotMinorChannelID, 'Laezaria Bot - Minor Logs');
+                    sendEmbedLog(embed_information_react_log, config.BotLog_Minor_ChanneLID, 'Laezaria Bot - Minor Logs');
                 }
 
                 if (reaction.emoji.name === 'laezaria' && !user.bot) {
@@ -63,7 +63,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                         .setDescription(`${user.tag}(${user}) reacted with ${reaction.emoji}`)
                         .setFooter(`ID: ${user.id}`)
                         .setTimestamp()
-                    sendEmbedLog(embed_information_laez_react_log, config.BotMinorChannelID, 'Laezaria Bot - Minor Logs');
+                    sendEmbedLog(embed_information_laez_react_log, config.BotLog_Minor_ChanneLID, 'Laezaria Bot - Minor Logs');
 
                     return reactAuthor.send(`${user}, Your ${role2remove.name} role has been removed 😃`)
                     // .then(message => { message.delete({ timeout: 10000 }).catch(() => { return; }) });
@@ -76,7 +76,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                     .setDescription(`${user.tag}(${user}) reacted with ${reaction.emoji}`)
                     .setFooter(`ID: ${user.id}`)
                     .setTimestamp()
-                    sendEmbedLog(embed_information_react_log, config.BotMinorChannelID, 'Laezaria Bot - Minor Logs');
+                    sendEmbedLog(embed_information_react_log, config.BotLog_Minor_ChanneLID, 'Laezaria Bot - Minor Logs');
             }
         }
     }

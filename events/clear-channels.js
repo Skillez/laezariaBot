@@ -8,7 +8,7 @@ const config = require("../bot-settings.json");
 bot.on('ready', () => {
     // Clear messages older than 3 hours on the delve lfg channel every 14 minutes.
     bot.setInterval(() => { // timer every 14 minutes to trigger function in brackets
-        CleanTheApplicationProcessChannel(config.ApplicationProcessChannelID, 10) // clears #laezaria-apply messages that are older than 10 minutes.
+        CleanTheApplicationProcessChannel(config.Application_ProcessChannelID, 10) // clears #laezaria-apply messages that are older than 10 minutes.
     }, 60000 * 14);
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -30,7 +30,7 @@ bot.on('ready', () => {
                 }
             })
             .catch(error => {
-                if (error.message.includes('[ERROR] Response: Internal Server Error')) return;
+                if (error.message.includes('Internal Server Error')) return;
                 errorLog(`clear-channels.js:3 CleanTheApplicationProcessChannel()\nCatch any remaining errors.`, error)
             });
     }

@@ -30,12 +30,12 @@ bot.on('guildMemberAdd', member => {
         .setTimestamp()
 
     if (member.guild.id != config.LaezariaServerID) { // IF A MEMBER HAS LEFT BUT ON DIFFERENT SERVER THAN THE DEFINED GUILD
-        return sendEmbedLog(embed_welcome_wrong_guild, config.BotLogChannelID, 'Laezaria Bot - Logs');
+        return sendEmbedLog(embed_welcome_wrong_guild, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
     }
     else { // IF MEMBER HAS LEFT CORRECT GUILD
 
         let WelcomeChannel = member.guild.channels.cache.find(ch => ch.id === config.WelcomeChannelID);
-        if (!WelcomeChannel) return sendEmbedLog(embed_welcome_missing_channel, config.BotLogChannelID, 'Laezaria Bot - Logs');
+        if (!WelcomeChannel) return sendEmbedLog(embed_welcome_missing_channel, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
 
         // define the embed: missing send_messages
         let embed_welcome_missing_send_messages = new Discord.MessageEmbed()
@@ -64,11 +64,11 @@ bot.on('guildMemberAdd', member => {
                             .setFooter(`LOG:ID GuildMemberWelcomeJS_4`)
                             .setThumbnail(LaezariaIconURL)
                             .setTimestamp()
-                            return sendEmbedLog(embed_welcome_missing_emoji, config.BotLogChannelID, 'Laezaria Bot - Logs');
+                            return sendEmbedLog(embed_welcome_missing_emoji, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
                     });
             })
             .catch(() => {
-                return sendEmbedLog(embed_welcome_missing_send_messages, config.BotLogChannelID, 'Laezaria Bot - Logs');
+                return sendEmbedLog(embed_welcome_missing_send_messages, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
             })
     }
 });

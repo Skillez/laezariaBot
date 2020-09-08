@@ -50,6 +50,6 @@ bot.on('ready', async () => {
                 .setImage('https://skillez.eu/images/discord/laezbanner.png')
                 .setFooter('Bot is ready to work')
                 .setTimestamp()
-            await sendEmbedLog(embed_bot_logged, config.BotLogChannelID, 'Laezaria Bot - Logs');
+            await sendEmbedLog(embed_bot_logged, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
         }).catch(error => errorLog(`ready-event.js:2 ready Event()\nError to fetch guild members i guess.`, error));
 });

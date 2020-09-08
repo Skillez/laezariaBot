@@ -61,7 +61,7 @@ module.exports.run = async (bot, message, args) => {
         mention.send(A2).then(() => { // SEND THE MESSAGE TO THE USER
             message.channel.send(`✅ Done!\nDirect message sent to **${mention.user.tag}**`)
                 .then(message => {
-                    sendEmbedLog(embed_dm_success_log, config.BotDirectMessageChannelID, 'Laezaria Bot - Direct Messages');
+                    sendEmbedLog(embed_dm_success_log, config.BotLog_DirectMessageChannelID, 'Laezaria Bot - Direct Messages');
                     message.delete({ timeout: 5000 }).catch(() => { return })
                 });
         }).catch(error => { // IF MESSAGE CANNOT BE DELIEVERED

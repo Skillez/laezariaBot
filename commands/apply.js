@@ -14,8 +14,8 @@ module.exports.run = async (bot, message) => {
     //                                  interactive application                                 //
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    if (message.channel.id != config.ApplicationProcessChannelID) {
-        return message.reply(`You can only apply on the <#${config.ApplicationProcessChannelID}> channel!`)
+    if (message.channel.id != config.Application_ProcessChannelID) {
+        return message.reply(`You can only apply on the <#${config.Application_ProcessChannelID}> channel!`)
             .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
     }
 
@@ -27,16 +27,16 @@ module.exports.run = async (bot, message) => {
         return message.reply(`Hello!\nIt seems that you are an ex-member of the club, if you would like to rejoin the club, please contact any of our club's staffs (senpai, manager).`)
             .then(message => message.delete({ timeout: 20000 })).catch(() => { return });
 
-    if (message.member.roles.cache.some(role => role.id === config.ApplyRestrictionRoleID))
+    if (message.member.roles.cache.some(role => role.id === config.Application_RestrictionRoleID))
         return message.reply(`You are banned from using this command.`)
             .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
 
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    const appChannel = message.guild.channels.cache.find(ch => ch.id === config.ApplicationChannelID);
-    const appStorageChannel = message.guild.channels.cache.find(ch => ch.id === config.ApplicationStorageChannelID);
-    const appProcessChannel = message.guild.channels.cache.find(ch => ch.id === config.ApplicationProcessChannelID);
+    const appChannel = message.guild.channels.cache.find(ch => ch.id === config.Application_ChannelID);
+    const appStorageChannel = message.guild.channels.cache.find(ch => ch.id === config.Application_StorageChannelID);
+    const appProcessChannel = message.guild.channels.cache.find(ch => ch.id === config.Application_ProcessChannelID);
 
     if (appChannel && appStorageChannel) {
         const appChannelReadMessagesCheck = await appChannel.messages.fetch({ limit: 1 }).catch(() => { return });
@@ -56,7 +56,7 @@ module.exports.run = async (bot, message) => {
             .setFooter(`LOG:ID ClubApplicationJS_1`)
             .setThumbnail(LaezariaIconURL)
             .setTimestamp()
-        return sendEmbedLog(embed_application_missing_channels, config.BotLogChannelID, 'Laezaria Bot - Logs');
+        return sendEmbedLog(embed_application_missing_channels, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
     }
 
     if (!appChannel.permissionsFor(message.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'])) { // requirement for application channel
@@ -213,7 +213,7 @@ module.exports.run = async (bot, message) => {
     }
 
     function Question3(Answer1, Answer2) {
-        return message.reply(`Hey ${Answer1}, what is your **GEODE Mastery Points**?\n(or type cancel to stop)`)
+        return message.reply(`What is your **GEODE Mastery Points**?\n(or type cancel to stop)`)
             .then(Question => {
                 message.channel.awaitMessages(filter, { max: 1, time: 180000 })
                     .then(Answer => {
@@ -268,7 +268,7 @@ module.exports.run = async (bot, message) => {
     }
 
     function Question4(Answer1, Answer2, Answer3) {
-        return message.reply(`${Answer1} what is your **highest Power Rank**?\n(or type cancel to stop)`)
+        return message.reply(`What is your **highest Power Rank**?\n(or type cancel to stop)`)
             .then(Question => {
                 message.channel.awaitMessages(filter, { max: 1, time: 180000 })
                     .then(Answer => {

@@ -6,7 +6,7 @@ require('console-stamp')(console, 'dd/mm/yyyy - HH:MM:ss');
 const bot = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 
 // define current bot version
-const BotVersion = '1.3a';
+const BotVersion = '1.4';
 
 // define global embed color
 const embedColors = {
@@ -19,10 +19,11 @@ const embedColors = {
 	'DirectMessage': '#ff00ff',				//	dm.js
 	'EditMessage': '#c71585',				//	edit.js
 	'SayMessage': '#a64dff',				//	say.js
-	'DelveVerification': '#F0E68C',			//	delve-verification.js
+	'PointsColor': '#F0E68C',				//	points.js
 	'StatusMessage': '#008080',				//	status.js
 	'ClubApplications': '#A447E4',			//	club-applications.js
-	'InfoReactionLog': "#FFFEFF",			// information-remove-guest.js
+	'InfoReactionLog': "#FFFEFF",			//  information-remove-guest.js
+	'DefaultMessage': "#ff9933",			//  default color for embeds
 
 	'LightSalmon': '#FFA07A',
 	'additionalcolor': '#e60073'
@@ -93,11 +94,28 @@ module.exports = {
 		if (!bot.users.cache.get(config.BotOwnerID)) return console.warn(`app.js:1 errorLog() ❌ The bot Owner is UNDEFINED (probably wrong userID in: config.BotOwnerID)`);
 		bot.users.cache.get(config.BotOwnerID).send(`❌ an issue occurred with the **${bot.user.username}** application!` + "```" + text + "```" + error)
 			.then(() => console.error(`${text}`, error))
-			.catch(() => { console.warn(`app.js:2 errorLog() ❌ Owner has DMs disabled.`) });
+			.catch(error => { console.warn(`app.js:2 errorLog() ❌ Owner has DMs disabled.`, error) });
 	},
 
 	getCommand: function (commandName) {
 		return bot.commands.get(commandName);
+	},
+
+	embedMessage: function (text, user) {
+		if (!user) {
+			// Send an embed message without footer
+			const embed_message = new Discord.MessageEmbed()
+				.setDescription(text)
+				.setColor(embedColors.DefaultMessage)
+			return embed_message;
+		} else {
+			// Send an embed message with footer
+			const embed_message = new Discord.MessageEmbed()
+				.setDescription(text)
+				.setColor(embedColors.DefaultMessage)
+				.setFooter(user.tag, user.displayAvatarURL())
+			return embed_message;
+		}
 	},
 
 	getCommands: function () {

@@ -22,7 +22,7 @@ module.exports.run = async (bot, message, args) => {
             .then(message => { message.delete({ timeout: 7000 }).catch(() => { return; }) }); // remove bot dice missing number
 
         message.channel.send(`${message.author} rolled the dice (**D${args[0]}**).\nLanded on ${Number2Emoji(DiceResult)}`)
-            .then(message => { message.delete({ timeout: 30000 }).catch(() => { return; }) }); // remove bot dice result message
+            // .then(message => { message.delete({ timeout: 30000 }).catch(() => { return; }) }); // remove bot dice result message
 
     } else return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
         .then(message => message.delete({ timeout: 10000 })).catch(() => { return });

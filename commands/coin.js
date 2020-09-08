@@ -13,7 +13,7 @@ module.exports.run = async (bot, message) => {
 
     let FlipResult = coinFlip();
     return message.channel.send(`${message.author} flipped a coin.\nLanded on **${FlipResult}**!`)
-        .then(message => { message.delete({ timeout: 30000 }).catch(() => { return; }) }); // remove bot coin result message
+        // .then(message => { message.delete({ timeout: 30000 }).catch(() => { return; }) }); // remove bot coin result message
 
     /////////////////////////////////////////////////////////////////////////////////////////
 

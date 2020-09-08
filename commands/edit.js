@@ -55,7 +55,7 @@ module.exports.run = async (bot, message, args) => {
                 message.channel.send(`✅ Done!\nMessage modified!`)
                     .then(message => {
                         message.delete({ timeout: 5000 }).catch(() => { return; });
-                        return sendEmbedLog(embed_edit_success, config.BotLogChannelID, 'Laezaria Bot - Logs');
+                        return sendEmbedLog(embed_edit_success, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
                     });
             }
         }
