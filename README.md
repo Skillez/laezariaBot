@@ -1,17 +1,14 @@
-# Laezaria Discord Bot**v1.3a** Update!
+# Laezaria Discord Bot**v1.4** Update!
 
-1. Major changes
-- Revised system of command permissions.
-- Webhook system rebuilt, now automatically generates webhook on the log channels if it is missing.
-- The commands were cleared from unnecessary code and updated to work with the new design.
-- A help command rebuilt into a dynamic system.
+1. Laezaria Points System℠
+- New donation system to assess donations with a leaderboard and seasons!
 
-2. Apply system:
-- The response time extended from 1 to 3 minutes.
-- Extended other clubs question to allow 100 characters for the answer and added info about that next to the question.
 
-3. New commands:
-- !reload (owner) - update or load new commands without restarting the bot.
+2. New commands:
+- !rank (public) - Displays own or other people current ranking and points.
+- !points (manager) - Manages user Laezaria Points (add/del).
 
-4. Old files:
-- delve-verification and old application-guest removed from the bot entirely.
+3. New functions:
+- Overall and current season leaderboard message (daily update - 1 pm CEST).
+- Spreadsheet with full ranking and season history (daily update - 9 pm CEST).
+- Overall top1 donation role and current season top10 donation role (daily update - 1 pm CEST).
