@@ -58,6 +58,6 @@ module.exports.run = async (bot, message, args) => {
 
         // User is already in the database
         if (points.find(u => u.id === user.id)) message.channel.send(embedMessage(`${user} ranking: **${userRank}** out of ${points.length} people.\n${laezEmoji} **${points.find(u => u.id === user.id).points.toLocaleString()}** Laezaria Points!`, message.author))
-            .then(message => message.delete({ timeout: 20000 })).catch(() => { return });
+            .then(message => message.delete({ timeout: 60000 })).catch(() => { return });
     }
 }
