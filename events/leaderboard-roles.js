@@ -86,7 +86,8 @@ bot.on('ready', async () => {
                 if (top10role.members.find(user => user.id === top10Element.user.id)) return;
 
                 // If top10Element doesn't have the role
-                return await top10Element.roles.add(top10role);
+                await top10Element.roles.add(top10role)
+                    .catch(error => errorLog(`leaderboard-roles.js:2 topCurrentDonatorRole()\nError to add role(${top10role.name}) to ${top10Element.user.tag}!`, error));
             });
 
             // Remove roles from the wrong people
@@ -96,7 +97,8 @@ bot.on('ready', async () => {
                 if (top10Array.includes(roleMember)) return;
 
                 // If roleMember is not part of top10 currentLB
-                return await roleMember.roles.remove(top10role);
+                await roleMember.roles.remove(top10role)
+                    .catch(error => errorLog(`leaderboard-roles.js:3 topCurrentDonatorRole()\nError to remove role(${top10role.name}) from ${roleMember.user.tag}!`, error));
             });
         }
         // Else if currentLB is empty 
@@ -104,12 +106,13 @@ bot.on('ready', async () => {
             const top10role = bot.guilds.cache.get(config.LaezariaServerID).roles.cache.get(config.Leaderboard_Role_TopCurrentID);
 
             // If top10role is missing
-            if (!top10role) return errorLog(`leaderboard-roles.js:2 topCurrentDonatorRole()\ntop10role is undefined, probably wrong ID or role has been removed from the server!`);
+            if (!top10role) return errorLog(`leaderboard-roles.js:4 topCurrentDonatorRole()\ntop10role is undefined, probably wrong ID or role has been removed from the server!`);
 
             // Remove any remaining people from the role
             if (top10role.members.size >= 1) {
                 top10role.members.forEach(async user => {
-                    await user.roles.remove(top10role);
+                    await user.roles.remove(top10role)
+                        .catch(error => errorLog(`leaderboard-roles.js:5 topCurrentDonatorRole()\nError to remove role(${top10role.name}) from ${user.user.tag}!`, error));
                 });
             }
         }
@@ -144,24 +147,27 @@ bot.on('ready', async () => {
                 if (top1user === roleMember) return;
 
                 // If roleMember is not part of top1 overallLB
-                await roleMember.roles.remove(top1role);
+                await roleMember.roles.remove(top1role)
+                    .catch(error => errorLog(`leaderboard-roles.js:2 topOverallDonatorRole()\nError to remove role(${top1role.name}) from ${roleMember.user.tag}!`, error));
             });
 
             // Check if the user has role if no, then add it
             if (top1role.members.find(user => user.id === top1user.user.id)) return;
-            else await top1user.roles.add(top1role);
+            else await top1user.roles.add(top1role)
+                .catch(error => errorLog(`leaderboard-roles.js:3 topOverallDonatorRole()\nError to add role(${top1role.name}) to ${top1user.user.tag}!`, error));
         }
         // Else if overallLB is empty - remove role from everyone
         else {
             const top1role = bot.guilds.cache.get(config.LaezariaServerID).roles.cache.get(config.Leaderboard_Role_TopOverallID);
 
             // If top1role is missing
-            if (!top1role) return errorLog('leaderboard-roles.js:2 topOverallDonatorRole()\ntop1role is undefined, probably wrong ID or role has been removed from the server!');
+            if (!top1role) return errorLog('leaderboard-roles.js:4 topOverallDonatorRole()\ntop1role is undefined, probably wrong ID or role has been removed from the server!');
 
             // Remove any remaining people from the role
             if (top1role.members.size >= 1) {
                 top1role.members.forEach(async user => {
-                    await user.roles.remove(top1role);
+                    await user.roles.remove(top1role)
+                        .catch(error => errorLog(`leaderboard-roles.js:5 topOverallDonatorRole()\nError to remove role(${top1role.name}) from ${user.user.tag}!`, error));
                 });
             }
         }
