@@ -7,7 +7,7 @@ const { bot, errorLog } = require('../app');
 bot.on("rateLimit", (rateLimitInfo) => {
     if (rateLimitInfo.timeout <= 10000) return;
 
-    errorLog(`rate-limits.js:1 rateLimit Event\nRatelimited: **${rateLimitInfo.route}**\nReached it's limit of **${rateLimitInfo.limit}** requests.\nTimeleft: **${msConversion(rateLimitInfo.timeout)}** (${rateLimitInfo.timeout} ms).`, undefined);
+    errorLog(`rate-limits.js:1 rateLimit Event\nRatelimited: ${rateLimitInfo.route}\nReached its limit of ${rateLimitInfo.limit} requests.\nTimeleft: ${msConversion(rateLimitInfo.timeout)} (${rateLimitInfo.timeout} ms).`, undefined);
     console.error(rateLimitInfo);
 
     //////////////////////////////////////////////////////////////////////////////////////////////

@@ -18,9 +18,10 @@ bot.on('messageReactionAdd', async (reaction, user) => {
         let SenpaiRole = reaction.message.guild.members.cache.get(user.id).roles.cache.some(role => role.id === config.SenpaiRoleID);
         let ViceRole = reaction.message.guild.members.cache.get(user.id).roles.cache.some(role => role.id === config.ViceRoleID);
         let ManagerRole = reaction.message.guild.members.cache.get(user.id).roles.cache.some(role => role.id === config.ManagerRoleID);
+        let EnforcerRole = reaction.message.guild.members.cache.get(user.id).roles.cache.some(role => role.id === config.EnforcerRoleID);
         let CaptainRole = reaction.message.guild.members.cache.get(user.id).roles.cache.some(role => role.id === config.CaptainRoleID);
         let MemberRole = reaction.message.guild.members.cache.get(user.id).roles.cache.some(role => role.id === config.MemberRoleID);
-        // console.error(`User: ${user.tag}\nSenpaiRole: ${SenpaiRole}\nViceRole: ${ViceRole}\nManagerRole: ${ManagerRole}\nCaptainRole: ${CaptainRole}\nMemberRole: ${MemberRole}`);
+        // console.error(`User: ${user.tag}\nSenpaiRole: ${SenpaiRole}\nViceRole: ${ViceRole}\nManagerRole: ${ManagerRole}\nCaptainRole: ${CaptainRole}\nEnforcerRole: ${EnforcerRole}\nMemberRole: ${MemberRole}`);
 
         // Fetch application reaction message to enable reaction function
         return reaction.message.fetch()
@@ -69,13 +70,13 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                     if (reaction.emoji.name === '⚠️') return addUserRole(applicantGuildMember, applicantUser, config.Application_RestrictionRoleID, reaction.emoji.name);
                 }
 
-                if (CaptainRole || ManagerRole || ViceRole || SenpaiRole) {
+                if (CaptainRole || EnforcerRole || ManagerRole || ViceRole || SenpaiRole) {
                     if (reaction.emoji.name === '🍏') return;
                     if (reaction.emoji.name === '🍎') return DMnegativeReaction();
                     if (reaction.emoji.name === 'laezaria') return addUserRole(applicantGuildMember, applicantUser, config.MemberRoleID, reaction.emoji.name);
                 }
 
-                if (MemberRole || CaptainRole || ManagerRole || ViceRole || SenpaiRole) {
+                if (MemberRole || CaptainRole || EnforcerRole || ManagerRole || ViceRole || SenpaiRole) {
                     if (reaction.emoji.name === '👍') return;
                     if (reaction.emoji.name === '👎') return DMnegativeReaction();
                 }

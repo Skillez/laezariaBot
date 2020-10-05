@@ -42,7 +42,7 @@ module.exports.run = async (bot, message, args) => {
                     { name: 'Highest role', value: `${message.channel.guild.members.cache.get(UserStatus.id).roles.highest.name}`, inline: true },
                     { name: 'Created', value: `${UserStatus.createdAt.getDate()} ${UserStatus.createdAt.toLocaleString('default', { month: 'long' })} ${UserStatus.createdAt.getFullYear()}`, inline: true })
 
-                .setFooter(`LOG: ID statusLog_1`)
+                .setFooter(`LOG:ID statusLog_1`)
                 .setThumbnail(UserAvatarURL)
                 .setTimestamp()
 
@@ -67,7 +67,7 @@ module.exports.run = async (bot, message, args) => {
                         { name: 'Tag', value: `${UserStatus.tag} `, inline: true },
                         { name: 'Highest role', value: `${message.channel.guild.members.cache.get(UserStatus.id).roles.highest.name}`, inline: true },
                         { name: 'Created', value: `${UserStatus.createdAt.getDate()} ${UserStatus.createdAt.toLocaleString('default', { month: 'long' })} ${UserStatus.createdAt.getFullYear()}`, inline: true })
-                    .setFooter(`LOG: ID statusLog_2`)
+                    .setFooter(`LOG:ID statusLog_2`)
                     .setThumbnail(UserAvatarURL)
                     .setTimestamp()
 
@@ -97,7 +97,7 @@ module.exports.run = async (bot, message, args) => {
                         { name: 'Tag', value: `${UserStatus.tag} `, inline: true },
                         { name: 'Highest role', value: `${message.channel.guild.members.cache.get(UserStatus.id).roles.highest.name}`, inline: true },
                         { name: 'Created', value: `${UserStatus.createdAt.getDate()} ${UserStatus.createdAt.toLocaleString('default', { month: 'long' })} ${UserStatus.createdAt.getFullYear()}`, inline: true })
-                    .setFooter(`LOG: ID statusLog_3`)
+                    .setFooter(`LOG:ID statusLog_3`)
                     .setThumbnail(UserAvatarURL)
                     .setTimestamp()
 

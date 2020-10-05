@@ -114,8 +114,7 @@ module.exports.run = async (bot, message) => {
 
     /////////////////////////////////////////////////////////////////////////////////////////
 
-    function Question1() {
-        // return message.reply("What's your trove **in-game name**?\n(or type cancel to stop)")
+    function Question1() { // In-game nick question
         return message.channel.send(`Alright, ${message.author} let's start with something easy, what is your **in-game name**?\n(or type cancel to stop)`)
             .then(Question => {
                 message.channel.awaitMessages(filter, { max: 1, time: 180000 })
@@ -157,7 +156,7 @@ module.exports.run = async (bot, message) => {
             });
     }
 
-    function Question2(Answer1) {
+    function Question2(Answer1) { // Trove mastery points question
         return message.reply(`Hey ${Answer1}, what is your **TROVE Mastery Points**?\n(or type cancel to stop)`)
             .then(Question => {
                 message.channel.awaitMessages(filter, { max: 1, time: 180000 })
@@ -184,15 +183,9 @@ module.exports.run = async (bot, message) => {
                                 .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
                         }
 
-                        if (replaceAnswer2Number > 150000) { // if answer is above 150,000 points
+                        if (replaceAnswer2Number > 150000) { // Check TROVE mastery points - upper limit 150,000 points
                             removeUserLastMessage(message.author); // remove after user typed answer
                             return message.channel.send(`${message.author} ❌ The application has been cancelled - Your Trove Mastery Points are too high.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        if (replaceAnswer2Number < 69200) { // if answer is below 69200 points (500 mastery)
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Your **Trove Mastery Points** are below our requirements.`)
                                 .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
                         }
 
@@ -212,7 +205,7 @@ module.exports.run = async (bot, message) => {
             });
     }
 
-    function Question3(Answer1, Answer2) {
+    function Question3(Answer1, Answer2) { // Geode mastery points question
         return message.reply(`What is your **GEODE Mastery Points**?\n(or type cancel to stop)`)
             .then(Question => {
                 message.channel.awaitMessages(filter, { max: 1, time: 180000 })
@@ -239,15 +232,8 @@ module.exports.run = async (bot, message) => {
                                 .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
                         }
 
-                        if (replaceAnswer3Number > 20000) { // if answer is above 20,000 points
-                            removeUserLastMessage(message.author); // remove after user typed answer
+                        if (replaceAnswer3Number > 20000) { // Check GEODE mastery points - upper limit - 20,000 points
                             return message.channel.send(`${message.author} ❌ The application has been cancelled - Your Geode Mastery Points are too high.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        if (replaceAnswer3Number < 4100) { // if answer is below 4,100 points
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Your **Geode Mastery Points** are below our requirements.`)
                                 .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
                         }
 
@@ -267,7 +253,7 @@ module.exports.run = async (bot, message) => {
             });
     }
 
-    function Question4(Answer1, Answer2, Answer3) {
+    function Question4(Answer1, Answer2, Answer3) { // Power rank question
         return message.reply(`What is your **highest Power Rank**?\n(or type cancel to stop)`)
             .then(Question => {
                 message.channel.awaitMessages(filter, { max: 1, time: 180000 })
@@ -294,22 +280,16 @@ module.exports.run = async (bot, message) => {
                                 .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
                         }
 
-                        if (replaceAnswer4Number > 45000) { // if answer is above 45,000 points
+                        if (replaceAnswer4Number > 45000) { // Check Power Rank - upper limit - 45,000 points
                             removeUserLastMessage(message.author); // remove after user typed answer
                             return message.channel.send(`${message.author} ❌ The application has been cancelled - Your highest Power Rank is too high.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        if (replaceAnswer4Number < 30000) { // if answer is below a number 30000
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Your **highest Power Rank** is below our requirements.`)
                                 .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
                         }
 
                         removeUserLastMessage(message.author); // remove after user typed answer
                         // let Answer3 = Answer.first().content;
                         setTimeout(() => {
-                            return Question5(Answer1, Answer2, Answer3, Number(replaceAnswer4Number));
+                            return RequirementsCheck(Answer1, Answer2, Answer3, Number(replaceAnswer4Number));
                         }, 1000);
 
                     }).catch(error => {
@@ -322,7 +302,35 @@ module.exports.run = async (bot, message) => {
             });
     }
 
-    function Question5(Answer1, Answer2, Answer3, Answer4) {
+    function RequirementsCheck(nickName, trovePoints, geodePoints, powerRank) { // Check if applicant meet club requirements
+        let masteryBottom= '';
+        let geodeBottom = '';
+        let powerrankBottom = '';
+
+        if (powerRank >= config.requirements.powerRank) { // Check Power Rank - bottom limit - 30,000 points
+            return setTimeout(() => {
+                return Question5(nickName, trovePoints, geodePoints, powerRank);
+            }, 1000);
+        } else {
+            powerrankBottom = 'Your **highest Power Rank** is below our requirements.\n';
+
+            if (trovePoints >= config.requirements.trovePoints && geodePoints >= config.requirements.geodePoints) { // Check TROVE mastery points above 69200 points (500 mastery) and GEODE points above 4,100 (50 mastery)
+                return setTimeout(() => {
+                    Question5(nickName, trovePoints, geodePoints, powerRank);
+                }, 1000);
+            } else {
+                if (trovePoints < config.requirements.trovePoints) masteryBottom = '**Trove Mastery Points** are below our requirements.\n';
+                if (geodePoints < config.requirements.geodePoints) geodeBottom = '**Geode Mastery Points** are below our requirements.';
+            }
+        }
+
+        if (masteryBottom || geodeBottom || powerrankBottom) {
+            return message.channel.send(`${message.author} ❌ The application has been cancelled:\n\n${masteryBottom}${geodeBottom}${powerrankBottom}`)
+                .then(message => message.delete({ timeout: 10000 })).catch(() => { return }); // remove bot exit request message.
+        }
+    }
+
+    function Question5(Answer1, Answer2, Answer3, Answer4) { // Other clubs question
         return message.reply("What other clubs are you associated with? [max 100 characters]\n(or type cancel to stop)")
             .then(Question => {
                 message.channel.awaitMessages(filter, { max: 1, time: 180000 })
@@ -364,7 +372,7 @@ module.exports.run = async (bot, message) => {
             });
     }
 
-    function Question6(Answer1, Answer2, Answer3, Answer4, Answer5) {
+    function Question6(Answer1, Answer2, Answer3, Answer4, Answer5) { // Upload character sheet screenshot
         return message.reply("Please upload a screenshot of the character sheet now.\nMake sure your file is saved as one of the following extensions: **PNG**, **JPG**, **GIF**, **JPEG**\nExample as shown: https://skillez.eu/images/discord/app.png\n(or type anything to stop)")
             .then(Question => {
                 message.channel.awaitMessages(filter, { max: 1, time: 180000 })
@@ -400,7 +408,7 @@ module.exports.run = async (bot, message) => {
             });
     }
 
-    async function appPreview(Answer1, Answer2, Answer3, Answer4, Answer5, appImageUrl, appImageMessage) {
+    async function appPreview(Answer1, Answer2, Answer3, Answer4, Answer5, appImageUrl, appImageMessage) { // Application preview
         // Create the attachment using MessageAttachment
         const attachment = new Discord.MessageAttachment(appImageUrl);
 
@@ -434,7 +442,7 @@ module.exports.run = async (bot, message) => {
         }
     }
 
-    async function previewConfirmation(previewMessage, applicationAuthor, Answer1, Answer2, Answer3, Answer4, Answer5, appStorageImageURL, appStorageMessage, appChannel) {
+    async function previewConfirmation(previewMessage, applicationAuthor, Answer1, Answer2, Answer3, Answer4, Answer5, appStorageImageURL, appStorageMessage, appChannel) { // Application preview confirmation (emoji)
 
         try {
             await previewMessage.react('✅');
@@ -486,7 +494,7 @@ module.exports.run = async (bot, message) => {
             });
     }
 
-    async function postApplication(Answer1, Answer2, Answer3, Answer4, Answer5, appStorageImageURL, appStorageMessage, appChannel) {
+    async function postApplication(Answer1, Answer2, Answer3, Answer4, Answer5, appStorageImageURL, appStorageMessage, appChannel) { // Post application
         let totalMasteryPoints = Math.round(Answer2 + Answer3);
         // define the embed: send application with provided information
         let embed_application_post = new Discord.MessageEmbed()
@@ -536,7 +544,7 @@ module.exports.run = async (bot, message) => {
         }
     }
 
-    function renameApplicant(applicantGuildMember, nickname) {
+    function renameApplicant(applicantGuildMember, nickname) { // Rename applicant
         // console.warn(applicantGuildMember);
         applicantGuildMember.setNickname(nickname, 'Laezaria Application System')
             // .then(changed => { console.warn(`${applicantGuildMember.user.tag} nickname changed to: Test`) })

@@ -11,6 +11,9 @@ module.exports.run = async (bot, message) => {
     //                                           add                                            //
     //////////////////////////////////////////////////////////////////////////////////////////////
 
+    // Random User (for testing)
+    // const user = message.guild.members.cache.random();
+    
     bot.emit("guildMemberAdd", message.member);
 
     return message.channel.send(`ℹ️ guildMemberAdd() - Test`)

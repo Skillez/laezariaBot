@@ -5,10 +5,11 @@ const cron = require('node-cron');
 
 bot.on('ready', async () => {
     // Update Leaderboard Message - https://crontab.guru/examples.html
-    cron.schedule('0 13 * * *', () => {
+    cron.schedule('0 13 * * *', () => { // At 1pm daily.
         // console.error('Updated Leaderboard Roles:', currentUTCDate());
-        topOverallDonatorRole();
-        topCurrentDonatorRole();
+        top1OverallDonatorRole();
+        top1CurrentDonatorRole();
+        top10CurrentDonatorRole();
     });
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,7 +45,7 @@ bot.on('ready', async () => {
         return `${date.getUTCDate()} ${MonthAsString(date.getUTCMonth())} ${date.getUTCFullYear()} • ${formatAMPM(date)} UTC`;
     }
 
-    async function topCurrentDonatorRole() {
+    async function top10CurrentDonatorRole() {
 
         // Load points_current.json file and parse it to javascript object
         const CurrentPointsJSON = fs.readFileSync("./points_current.json", "utf8");
@@ -55,15 +56,15 @@ bot.on('ready', async () => {
             return b.points - a.points;
         });
 
-        // If there is at least one person in currentLB database
-        if (currentLB[0]) {
-            const top10role = bot.guilds.cache.get(config.LaezariaServerID).roles.cache.get(config.Leaderboard_Role_TopCurrentID);
+        // If there is at least two persons in currentLB database
+        if (currentLB[1]) {
+            const top10role = bot.guilds.cache.get(config.LaezariaServerID).roles.cache.get(config.Leaderboard_Role_Top10CurrentID);
 
             // If top10role is missing
             if (!top10role) return errorLog(`leaderboard-roles.js:1 topCurrentDonatorRole()\ntop10role is undefined, probably wrong ID or role has been removed from the server!`);
 
             // Build an array with top10 users as elements
-            if (currentLB[0]) var top1user = bot.guilds.cache.get(config.LaezariaServerID).members.cache.get(currentLB[0].id);
+            // if (currentLB[0]) var top1user = bot.guilds.cache.get(config.LaezariaServerID).members.cache.get(currentLB[0].id);
             if (currentLB[1]) var top2user = bot.guilds.cache.get(config.LaezariaServerID).members.cache.get(currentLB[1].id);
             if (currentLB[2]) var top3user = bot.guilds.cache.get(config.LaezariaServerID).members.cache.get(currentLB[2].id);
             if (currentLB[3]) var top4user = bot.guilds.cache.get(config.LaezariaServerID).members.cache.get(currentLB[3].id);
@@ -75,7 +76,7 @@ bot.on('ready', async () => {
             if (currentLB[9]) var top10user = bot.guilds.cache.get(config.LaezariaServerID).members.cache.get(currentLB[9].id);
 
             const top10Array = [
-                top1user, top2user, top3user, top4user, top5user, top6user, top7user, top8user, top9user, top10user
+                top2user, top3user, top4user, top5user, top6user, top7user, top8user, top9user, top10user
             ]
 
             // Add role for top10 current people in the currentLB database
@@ -103,7 +104,7 @@ bot.on('ready', async () => {
         }
         // Else if currentLB is empty 
         else {
-            const top10role = bot.guilds.cache.get(config.LaezariaServerID).roles.cache.get(config.Leaderboard_Role_TopCurrentID);
+            const top10role = bot.guilds.cache.get(config.LaezariaServerID).roles.cache.get(config.Leaderboard_Role_Top10CurrentID);
 
             // If top10role is missing
             if (!top10role) return errorLog(`leaderboard-roles.js:4 topCurrentDonatorRole()\ntop10role is undefined, probably wrong ID or role has been removed from the server!`);
@@ -118,7 +119,62 @@ bot.on('ready', async () => {
         }
     }
 
-    async function topOverallDonatorRole() {
+    async function top1CurrentDonatorRole() {
+
+        // Load points_current.json file and parse it to javascript object
+        const CurrentPointsJSON = fs.readFileSync("./points_current.json", "utf8");
+        let currentLB = JSON.parse(CurrentPointsJSON);
+
+        // Sort the points by its values (from the highest to lowest)
+        currentLB.sort(function (a, b) {
+            return b.points - a.points;
+        });
+
+        // If there is at least one person in currentLB database
+        if (currentLB[0]) {
+            const top1role = bot.guilds.cache.get(config.LaezariaServerID).roles.cache.get(config.Leaderboard_Role_Top1CurrentID);
+            const top1user = bot.guilds.cache.get(config.LaezariaServerID).members.cache.get(currentLB[0].id);
+
+            // If top1role is missing
+            if (!top1role) return errorLog('leaderboard-roles.js:1 top1CurrentDonatorRole()\ntop1role is undefined, probably wrong ID or role has been removed from the server!');
+
+            // If top1 left the guild
+            if (!top1user) return;
+
+            // Remove roles from the wrong people
+            top1role.members.forEach(async roleMember => {
+
+                // Check if roleMember is in top1 of currentLB database
+                if (top1user === roleMember) return;
+
+                // If roleMember is not part of top1 currentLB
+                await roleMember.roles.remove(top1role)
+                    .catch(error => errorLog(`leaderboard-roles.js:2 top1CurrentDonatorRole()\nError to remove role(${top1role.name}) from ${roleMember.user.tag}!`, error));
+            });
+
+            // Check if the user has role if no, then add it
+            if (top1role.members.find(user => user.id === top1user.user.id)) return;
+            else await top1user.roles.add(top1role)
+                .catch(error => errorLog(`leaderboard-roles.js:3 top1CurrentDonatorRole()\nError to add role(${top1role.name}) to ${top1user.user.tag}!`, error));
+        }
+        // Else if currentLB is empty - remove role from everyone
+        else {
+            const top1role = bot.guilds.cache.get(config.LaezariaServerID).roles.cache.get(config.Leaderboard_Role_Top1CurrentID);
+
+            // If top1role is missing
+            if (!top1role) return errorLog('leaderboard-roles.js:4 top1CurrentDonatorRole()\ntop1role is undefined, probably wrong ID or role has been removed from the server!');
+
+            // Remove any remaining people from the role
+            if (top1role.members.size >= 1) {
+                top1role.members.forEach(async user => {
+                    await user.roles.remove(top1role)
+                        .catch(error => errorLog(`leaderboard-roles.js:5 top1CurrentDonatorRole()\nError to remove role(${top1role.name}) from ${user.user.tag}!`, error));
+                });
+            }
+        }
+    }
+
+    async function top1OverallDonatorRole() {
 
         // Load points_overall.json file and parse it to javascript object
         const OverallPointsJSON = fs.readFileSync("./points_overall.json", "utf8");
@@ -129,9 +185,9 @@ bot.on('ready', async () => {
             return b.points - a.points;
         });
 
-        // If there is at least one person in currentLB database
+        // If there is at least one person in overallLB database
         if (overallLB[0]) {
-            const top1role = bot.guilds.cache.get(config.LaezariaServerID).roles.cache.get(config.Leaderboard_Role_TopOverallID);
+            const top1role = bot.guilds.cache.get(config.LaezariaServerID).roles.cache.get(config.Leaderboard_Role_Top1OverallID);
             const top1user = bot.guilds.cache.get(config.LaezariaServerID).members.cache.get(overallLB[0].id);
 
             // If top1role is missing
@@ -158,7 +214,7 @@ bot.on('ready', async () => {
         }
         // Else if overallLB is empty - remove role from everyone
         else {
-            const top1role = bot.guilds.cache.get(config.LaezariaServerID).roles.cache.get(config.Leaderboard_Role_TopOverallID);
+            const top1role = bot.guilds.cache.get(config.LaezariaServerID).roles.cache.get(config.Leaderboard_Role_Top1OverallID);
 
             // If top1role is missing
             if (!top1role) return errorLog('leaderboard-roles.js:4 topOverallDonatorRole()\ntop1role is undefined, probably wrong ID or role has been removed from the server!');

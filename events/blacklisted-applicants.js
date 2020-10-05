@@ -74,10 +74,10 @@ bot.on("message", async message => {
     function WarningMessage(applicationMessage, Nick, WarningLevel, Reason, Evid1, Evid2, Evid3, Evid4) {
 
         if (WarningLevel == '') var WarningLevel = 'undefined';
-        if (WarningLevel === 'g') var WarningLevel = 'GREEN\nWell, I have no idea what to type here xD';
-        if (WarningLevel === 'y') var WarningLevel = 'YELLOW\nDespite having offenses on record, the player might be reasonable. Likely not a major problem. This is the stage where we should try to convince players to change their behavior and delete cheating programs. ';
-        if (WarningLevel === 'r') var WarningLevel = 'RED\nLong list of offenses keeps growing, indicating consistent negative behavior. Also if a person is difficult to reason with and/or displays direct disrespect towards those trying to keep things fair. Their removal is loosely enforced but highly recommended.';
-        if (WarningLevel === 'b') var WarningLevel = 'BLACK\nBanned players. This classification is separate from yellow and red. Simply accumulating a lot of basic offenses can not elevate one from red to black. Black level threats should be removed from absolutely everywhere, since contact with them may be dangerous.';
+        if (WarningLevel === 'g') var WarningLevel = "GREEN{split}Very low or undecided level of offence.\nMost likely not an issue, but should be monitored as a precaution.";
+        if (WarningLevel === 'y') var WarningLevel = "YELLOW{split}Low threat level. Qualifiers include:\n-Taking part in the harassment of other players while being led by another person\n-Successfully reforming from firsthand bullying or direct use of cheats in the past.";
+        if (WarningLevel === 'r') var WarningLevel = "RED{split}Medium threat level. Qualifiers include:\n-Directly harassing other players or communities\n-Promoting/rallying bullying on a specific player or community\n-Using external programs to alter the game for one's benefit (hacks/cheats/scripts).";
+        if (WarningLevel === 'b') var WarningLevel = "BLACK{split}High threat level. Qualifiers include:\n-Presenting a threat to another player's safety in real life\n-Mass distribution/endorsement of cheating software whether for free or for profit\n-Intentionally fostering a community that deliberately enables any violations.";
 
         if (Reason === '') var Reason = 'undefined';
 
@@ -85,7 +85,7 @@ bot.on("message", async message => {
         if (Evid3 === undefined) var Evid3 = '';
         if (Evid4 === undefined) var Evid4 = '';
 
-        let WarningLevelArray = WarningLevel.split('\n'); // split string on new lane
+        let WarningLevelArray = WarningLevel.split('{split}'); // split string into array
         // console.log('--------------------------------------------------------------------------------------------');
         // console.error(`Embed text input\nNick: ${Nick}\nWarning Level: ${WarningLevel}\nReason: ${Reason}\nEvidence#1: ${Evid1}\nEvidence#2: ${Evid2}\nEvidence#3: ${Evid3}\nEvidence#4: ${Evid4}`);
 

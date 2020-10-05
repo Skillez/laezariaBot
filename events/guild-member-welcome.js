@@ -1,74 +1,120 @@
-const { bot, Discord, sendEmbedLog, embedColors, LaezariaIconURL } = require('../app');
+const { bot, Discord } = require('../app');
 const config = require("../bot-settings.json");
+
+// const fs = require('fs');
+const { createCanvas, loadImage } = require('canvas');
+const canvas = createCanvas(1650, 500);
+const ctx = canvas.getContext('2d');
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                         NEW GUILD MEMBER WELCOME MESSAGE HANDLER                         //
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-bot.on('guildMemberAdd', member => {
+bot.on('guildMemberAdd', async member => {
+    const welcomeChannel = member.guild.channels.cache.find(ch => ch.id === config.WelcomeChannelID);
+    let welcomeEmojiReact = member.guild.emojis.cache.find(emoji => emoji.name === 'pikawave');
+    let welcomeEmojiEnjoy = member.guild.emojis.cache.find(emoji => emoji.name === 'pepegaShake');
+    let welcomeEmojiLaezaria = member.guild.emojis.cache.find(emoji => emoji.name === 'laezaria');
 
-    // define the embed: missing welcome channel
-    let embed_welcome_missing_channel = new Discord.MessageEmbed()
-        .setColor(embedColors.GuildMemberEvent)
-        .setAuthor('guild-member-welcome.js - ERROR', LaezariaIconURL)
-        .setTitle(`Guild Member Welcome - Handler`)
-        // .setDescription(`Guild Name: ${member.guild.name}`)
-        .addFields({ name: 'Reason', value: `I cannot locate the welcome channel`, inline: false })
-        .setFooter(`LOG:ID GuildMemberWelcomeJS_1`)
-        .setThumbnail(LaezariaIconURL)
-        .setTimestamp()
+    if (!welcomeChannel) return;
 
-    // define the embed: welcome on the wrong server
-    let embed_welcome_wrong_guild = new Discord.MessageEmbed()
-        .setColor(embedColors.GuildMemberEvent)
-        .setAuthor('guild-member-welcome.js - WARNING', LaezariaIconURL)
-        .setTitle(`Guild Member Welcome - Handler`)
-        // .setDescription(`Guild Name: ${member.guild.name}`)
-        .addFields({ name: 'Reason', value: `${member.tag} has joined, but in different guild`, inline: false })
-        .setFooter(`LOG:ID GuildMemberWelcomeJS_2`)
-        .setThumbnail(LaezariaIconURL)
-        .setTimestamp()
+    // Reset the canvas
+    ctx.clearRect(0, 0, 1650, 500);
 
-    if (member.guild.id != config.LaezariaServerID) { // IF A MEMBER HAS LEFT BUT ON DIFFERENT SERVER THAN THE DEFINED GUILD
-        return sendEmbedLog(embed_welcome_wrong_guild, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
-    }
-    else { // IF MEMBER HAS LEFT CORRECT GUILD
+    const backgroundImg = await loadImage('images/background.png');
+    // const avatarOutline = await loadImage('images/circleForAvatar.png');
 
-        let WelcomeChannel = member.guild.channels.cache.find(ch => ch.id === config.WelcomeChannelID);
-        if (!WelcomeChannel) return sendEmbedLog(embed_welcome_missing_channel, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
+    // Draw a base background image
+    ctx.drawImage(backgroundImg, 0, 0);
 
-        // define the embed: missing send_messages
-        let embed_welcome_missing_send_messages = new Discord.MessageEmbed()
-            .setColor(embedColors.GuildMemberEvent)
-            .setAuthor('guild-member-welcome.js - ERROR', LaezariaIconURL)
-            .setTitle(`Guild Member Welcome - Handler`)
-            // .setDescription(`Guild Name: ${member.guild.name}`)
-            .addFields({ name: 'Reason', value: `I cannot send messages in ${WelcomeChannel}`, inline: false })
-            .setFooter(`LOG:ID GuildMemberWelcomeJS_3`)
-            .setThumbnail(LaezariaIconURL)
-            .setTimestamp()
+    // Draw a member username
+    const applyText = (canvas, text) => {
+        // Declare a base size of the font
+        let fontSize = 51;
+        do {
+            // Assign the font to the context and decrement it so it can be measured again
+            ctx.font = `${fontSize -= 2}px Penumbra Serif Std Bold`;
+            // console.log(`-2px to the text`);
+            // console.log('current username length ' + ctx.measureText(text).width + 'px');
+            // Compare pixel width of the text to the canvas minus the approximate avatar size
+        } while (ctx.measureText(text).width > 700/*canvas.width - 180*/);
+        // Return the result to use in the actual canvas
+        return ctx.font;
+    };
 
-        WelcomeChannel.send(`${member} - Welcome to **Laezaria** <:laezaria:582281105298817032>! Check out the <#${config.InformationChannelID}> channel. Enjoy your stay <a:pepegaShake:607545444670898177>`)
-            .then(async message => {
-                if (!message.content) return; // if message.content is empty aka missing send_messages
+    // Assign the decided font to the canvas
+    ctx.font = applyText(canvas, member.user.username);
+    ctx.fillStyle = '#ffffff';
 
-                message.react("627849802704486412")
-                    .catch(error => {
-                        // define the embed: missing welcome reaction
-                        let embed_welcome_missing_emoji = new Discord.MessageEmbed()
-                            .setColor(embedColors.GuildMemberEvent)
-                            .setAuthor('guild-member-welcome.js - WARNING', LaezariaIconURL)
-                            .setTitle(`Guild Member Welcome - Handler`)
-                            // .setDescription(`Guild Name: ${member.guild.name}`)
-                            .addFields({ name: 'Reason', value: `${error.message}`, inline: false })
-                            .setFooter(`LOG:ID GuildMemberWelcomeJS_4`)
-                            .setThumbnail(LaezariaIconURL)
-                            .setTimestamp()
-                            return sendEmbedLog(embed_welcome_missing_emoji, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
-                    });
-            })
-            .catch(() => {
-                return sendEmbedLog(embed_welcome_missing_send_messages, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
-            })
-    }
+    const centerUsername = Math.round((700 - ctx.measureText(member.user.username).width) / 2);
+    // console.log(centerUsername + 'px');
+    // console.error(`Max username length: 700\nUsername length: ${ctx.measureText(member.user.username).width}\nHalf of that: ${ctx.measureText(member.user.username).width / 2}`);
+
+    ctx.fillText(member.user.username, 874 + centerUsername, 326);
+
+    // Draw a user count
+    ctx.font = '36px Penumbra Serif Std Bold';
+    ctx.fillStyle = '#ffffff';
+
+    const numberString = member.guild.members.cache.size.toString().slice(-1);
+    if (numberString === '1') ctx.fillText(`As our ${member.guild.members.cache.size}st member!`, 725, 415);
+    else if (numberString === '2') ctx.fillText(`As our ${member.guild.members.cache.size}nd member!`, 725, 415);
+    else if (numberString === '3') ctx.fillText(`As our ${member.guild.members.cache.size}rd member!`, 725, 415);
+    else ctx.fillText(`As our ${member.guild.members.cache.size}th member!`, 725, 415);
+
+    // const stringTest = '6969'
+    // const numberString = stringTest.slice(-1);
+    // if (numberString === '1') ctx.fillText(`As our ${stringTest}st member!`, 725, 415);
+    // else if (numberString === '2') ctx.fillText(`As our ${stringTest}nd member!`, 725, 415);
+    // else if (numberString === '3') ctx.fillText(`As our ${stringTest}rd member!`, 725, 415);
+    // else ctx.fillText(`As our ${stringTest}th member!`, 725, 415);
+
+
+    // // Draw user avatar on owl's head
+    // ctx.drawImage(await roundedAvatar(), 414, 87, 163, 163);
+    // ctx.drawImage(avatar, 414, 87, 163, 163); // without rounding it
+
+    // // Draw a circle around the member's avatar
+    // ctx.drawImage(avatarOutline, 410, 82);
+
+    // // Save to the file
+    // const out = fs.createWriteStream('images/test.png')
+    // canvas.createPNGStream().pipe(out);
+    // out.on('finish', () => console.log('The PNG file was created.'));
+
+    // Send a welcome message with canvas attachment
+    if (!welcomeEmojiReact) welcomeEmojiReact = '👋';
+    if (!welcomeEmojiLaezaria) welcomeEmojiLaezaria = '';
+    if (!welcomeEmojiEnjoy) welcomeEmojiEnjoy = '';
+
+    const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'welcome-test.png');
+    await welcomeChannel.send(`${member} - Welcome to **Laezaria** ${welcomeEmojiLaezaria}! Check out the <#${config.InformationChannelID}> channel. Enjoy your stay ${welcomeEmojiEnjoy}`, attachment)
+        .then(message => message.react(welcomeEmojiReact).catch(() => { return }))
+        .catch((() => { return }));
+
+    // Reset the canvas
+    ctx.clearRect(0, 0, 1650, 500);
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    // async function roundedAvatar() {
+    //     const canvasAvatar = createCanvas(163, 163);
+    //     const ctx = canvasAvatar.getContext('2d');
+    //     const avatar = await loadImage(member.user.displayAvatarURL({ format: 'png', dynamic: true, size: 256 }));
+
+    //     ctx.drawImage(avatar, 0, 0, 163, 163);
+    //     ctx.globalCompositeOperation = 'destination-in';
+    //     ctx.beginPath();
+    //     ctx.arc(81, 81, 80, 0, Math.PI * 2);
+    //     ctx.closePath();
+    //     ctx.fill();
+
+    //     // Save to the file
+    //     const out = fs.createWriteStream('images/roundedAvatar.png')
+    //     canvasAvatar.createPNGStream().pipe(out);
+    //     out.on('finish', () => console.log('The avatar PNG file was created.'))
+
+    //     // Return rounded avatar
+    //     return canvasAvatar;
+    // }
 });

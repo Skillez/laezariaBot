@@ -12,7 +12,7 @@ const key = require('../Laezaria-Bot-292d692ec77c.json');
 
 bot.on('ready', () => {
     // Backup Laezaria Points - https://crontab.guru/examples.html
-    cron.schedule('0 21 * * *', () => {
+    cron.schedule('0 21 * * *', () => { //  At 9pm daily.
         const lastUpdate = new Date(Date.now()).toUTCString();
         // console.error('Backup Laezaria Points:', lastUpdate);
         currentLeaderboardSpreadsheet();

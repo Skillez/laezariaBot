@@ -1,5 +1,6 @@
 const { bot, Discord, sendEmbedLog, embedColors, LaezariaIconURL, BotVersion, errorLog } = require('../app');
 const config = require("../bot-settings.json");
+const fs = require("fs");
 
 bot.login(config.BotToken);
 
@@ -37,7 +38,7 @@ bot.on('ready', async () => {
                 .setColor(embedColors.ReadyEvent)
                 .setAuthor(`Bot has logged in successfully!`, LaezariaIconURL)
                 .setTitle(`Status: ${bot.user.presence.status.toUpperCase()}`)
-                .setDescription(`\n‏‏‎\n**${totalUsers}** total members in **${guild.name}**\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n**${totalCachedUsers}** users cached\n----------------------------\n**${totalOnlineUsers}** Online\n**${totalAFKUsers}** AFK\n**${totalDNDUsers}** DND\n**${totalOfflineUsers}** Invisible/Offline\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n❗ Version: **${BotVersion}**‏‏‎‎`)
+                .setDescription(`\n‏‏‎\n**${totalUsers}** total members in **${guild.name}**\nServer Boost Tier **${guild.premiumTier}** with **${guild.premiumSubscriptionCount}** subscriptions!\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n**${totalCachedUsers}** users cached\n----------------------------\n**${totalOnlineUsers}** Online\n**${totalAFKUsers}** AFK\n**${totalDNDUsers}** DND\n**${totalOfflineUsers}** Invisible/Offline\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n❗ Version: **${BotVersion}**‏‏‎‎`)
                 .addFields(
                     { name: 'Username', value: bot.user.username, inline: true },
                     { name: 'Discriminator', value: bot.user.discriminator, inline: true },
@@ -52,4 +53,14 @@ bot.on('ready', async () => {
                 .setTimestamp()
             await sendEmbedLog(embed_bot_logged, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
         }).catch(error => errorLog(`ready-event.js:2 ready Event()\nError to fetch guild members i guess.`, error));
+
+
+    // Post patch notes on captain channel.
+    const patchNotesChannel = guild.channels.cache.get(config.CaptainChannelID);
+    if (patchNotesChannel) {
+        const patchNotes = fs.readFileSync("./README.md", "utf8");
+        patchNotesChannel.send(patchNotes)
+            .catch(error => errorLog('ready-event.js:3 ready Event()\nError to post patch notes.', error));
+    }
+
 });

@@ -9,7 +9,7 @@ const cron = require('node-cron');
 
 bot.on('ready', async () => {
     // Update Leaderboard Messages - https://crontab.guru/examples.html
-    cron.schedule('0 13 * * *', () => {
+    cron.schedule('0 13 * * *', () => { // At 1pm daily.
         // console.error('Updated Leaderboard Message:', currentUTCDate());
         updateCurrentLeaderboard();
         updateOverallLeaderboard();

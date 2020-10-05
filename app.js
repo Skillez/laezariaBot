@@ -6,7 +6,7 @@ require('console-stamp')(console, 'dd/mm/yyyy - HH:MM:ss');
 const bot = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 
 // define current bot version
-const BotVersion = '1.4';
+const BotVersion = '1.5';
 
 // define global embed color
 const embedColors = {
