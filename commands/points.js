@@ -6,13 +6,13 @@ module.exports.help = {
     name: "points",
     description: "Manages user Laezaria Points.",
     type: "manager",
-    usage: `ℹ️ Format: **${config.BotPrefix}points add/del @mention/userID amount**\n\nℹ️ Examples:\n${config.BotPrefix}points add @Skillez 100\n${config.BotPrefix}points del ${config.BotOwnerID} 100`
+    usage: `ℹ️ Format: **${config.BotPrefix}points add/del @mention/userID amount note(optional)**\n\nℹ️ Examples:\n${config.BotPrefix}points add @Skillez 100 Event prize\n${config.BotPrefix}points del ${config.BotOwnerID} 100`
 };
 
 module.exports.run = async (bot, message, args) => {
 
     //////////////////////////////////////////////////////////////////////////////////////////////
-    //                           points add/del @mention/userID amount                          //
+    //                   points add/del @mention/userID amount note(optional)                   //
     //////////////////////////////////////////////////////////////////////////////////////////////
 
     // Add/Remove points for other people
@@ -27,11 +27,15 @@ module.exports.run = async (bot, message, args) => {
             .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
         switch (args[0].toLowerCase()) {
-            case "add": return addPoints(mentionedUser, parseInt(args[2]));
-            case "del": return delPoints(mentionedUser, parseInt(args[2]));
+            case "add": return addPoints(mentionedUser, parseInt(args[2]), args.slice(3).join(" "))
+                .then(pointsStatus => { message.channel.send(embedMessage(pointsStatus, message.author)).then(message => message.delete({ timeout: 10000 })).catch(() => { return }); });
+
+            case "del": return delPoints(mentionedUser, parseInt(args[2]), args.slice(3).join(" "))
+                .then(pointsStatus => { message.channel.send(embedMessage(pointsStatus, message.author)).then(message => message.delete({ timeout: 10000 })).catch(() => { return }); });
 
             default: return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
                 .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
+
         }
     }
 
@@ -41,194 +45,133 @@ module.exports.run = async (bot, message, args) => {
 
     /////////////////////////////////////////////////////////////////////////////////////////
 
-    async function addPoints(user, amount) {
-
+    async function addPoints(user, amount, noteString) {
         // Block 0 and negative amounts of points to add
-        if (amount <= 0) return message.channel.send(embedMessage(`You have to add at least **1** point!`, message.author))
-            .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
+        if (amount <= 0) return 'You have to add at least **1** point!';
+        if (amount > 1000000) return 'You can add up to 1 milion points at once!';
 
-        // Load points_current.json file and parse it to javascript object
-        const currentPointsJSON = fs.readFileSync("./points_current.json", "utf8");
-        var currentLB = JSON.parse(currentPointsJSON);
+        if (!noteString) noteString = 'Note is not provided';
+        const noteStringParts = noteString.match(/.{1,500}/g);
 
-        // User is not in the database
-        if (!currentLB.find(u => u.id === user.id)) {
-            newPoints = { "id": user.id, "tag": user.tag, "points": amount };
+        if (noteStringParts[1]) noteString = `${noteStringParts[0]}...`;
+        else noteString = noteStringParts[0];
 
-            // Don't allow to add more than 1m points in total
-            if (newPoints.points > 1000000) return message.channel.send(embedMessage(`You can't add that many points!`, message.author))
-                .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
+        var pointsAddedCurrent;
+        var pointsAddedOverall;
+        await addPointsHandler(user, amount, 'current_season').then(x => { pointsAddedCurrent = x });
+        if (pointsAddedCurrent === true) await addPointsHandler(user, amount, 'overall_points').then(x => { pointsAddedOverall = x });
 
-            // Add a new data in the database
-            await currentLB.push(newPoints);
-
-            // Write a new data to the database
-            return fs.writeFile("./points_current.json", JSON.stringify(currentLB), (error) => {
-                if (error) errorLog(`points.js:1 addPoints()\nError to write data to points_current.json!\nSet ${amount} points to a new ${user.id}(${user.tag}).`, error);
-
-                // Add points in overall database too
-                addOverall(user, amount);
-
-                // Send an embed message confirmation (new user)
-                message.channel.send(embedMessage(`You have added **+${amount.toLocaleString()}** points to ${user}!`, message.author))
-                    .then(info => {
-                        info.delete({ timeout: 10000 })
-                        sendEmbedLog(embedMessageLog(`${message.author} added +${amount.toLocaleString()} points!`, user), config.BotLog_ChannelID, 'Laezaria Bot Points - Logs');
-                    }).catch(() => { return });
-            });
+        if (pointsAddedCurrent === true && pointsAddedOverall === true) {
+            // System Log
+            // console.log(`-----------------------------------------\nLaezaria Points System Log (${user.tag})\ncurrentLB add ${amount} points: ${pointsAddedCurrent}\noverallLB add ${amount} points: ${pointsAddedOverall}\nUser information: ${user.id}\n-----------------------------------------`);
+            sendEmbedLog(embedMessageLog(`${message.author} added +${amount.toLocaleString()} points!\n\ncurrent season file: ✅\noverall points file: ✅\n\nNote: ${noteString}`, user), config.BotLog_ChannelID, 'Laezaria Bot Points - Logs');
+            return `📥 You have added **+${amount.toLocaleString()}** points to ${user}!`;
         }
-
-        // User is already in the database
-        if (currentLB.find(u => u.id === user.id)) {
-            let addPoints = currentLB.find(u => u.id === user.id).points + amount;
-
-            // Set a new values
-            currentLB.find(u => u.id === user.id).points = addPoints;
-            currentLB.find(u => u.id === user.id).tag = user.tag;
-
-            // Don't allow to add more than 1m points in total to a single user
-            if (addPoints > 1000000) return message.channel.send(embedMessage(`You can't add that many points!\nThe final value cannot be above **1M** points! (${addPoints.toLocaleString()}).`, message.author))
-                .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
-
-            // Write an update to the database
-            return fs.writeFile("./points_current.json", JSON.stringify(currentLB), error => {
-                if (error) errorLog(`points.js:2 addPoints()\nError to write data to points_current.json!\nSet ${addPoints} points to ${user.id}(${user.tag}).`, error);
-
-                // Add points in overall database too
-                addOverall(user, amount, currentLB);
-
-                // Send an embed message confirmation (user update)
-                message.channel.send(embedMessage(`${user} received **+${amount.toLocaleString()}** points!\nNew balance: **${currentLB.find(u => u.id === user.id).points.toLocaleString()}**`, message.author))
-                    .then(info => {
-                        info.delete({ timeout: 10000 })
-                        sendEmbedLog(embedMessageLog(`${message.author} added +${amount.toLocaleString()} points!`, user), config.BotLog_ChannelID, 'Laezaria Bot Points - Logs');
-                    }).catch(() => { return });
-            });
+        else if (pointsAddedCurrent === true && pointsAddedOverall != true) {
+            // System Log
+            // console.log(`-----------------------------------------\nLaezaria Points System Log (${user.tag})\ncurrentLB add ${amount} points: ${pointsAddedCurrent}\noverallLB add ${amount} points: ${pointsAddedOverall}\nUser information: ${user.id}\n-----------------------------------------`);
+            sendEmbedLog(embedMessageLog(`${message.author} added +${amount.toLocaleString()} points!\n\ncurrent season file: ✅\noverall points file: ${pointsAddedOverall}\n\nNote: ${noteString}`, user), config.BotLog_ChannelID, 'Laezaria Bot Points - Logs');
+            return `📥 You have added **+${amount.toLocaleString()}** points to ${user}!`;
         }
-    }
+        else return pointsAddedCurrent;
 
-    async function addOverall(user, amount) {
-        // Load points_overall.json file and parse it to javascript object
-        const addOverallPointsJSON = fs.readFileSync("./points_overall.json", "utf8");
-        var overallLB = JSON.parse(addOverallPointsJSON);
-
-        // User is not in the database
-        if (!overallLB.find(u => u.id === user.id)) {
-            newPoints = { "id": user.id, "tag": user.tag, "points": amount };
-
-            // Add a new data in the database
-            await overallLB.push(newPoints);
-
-            // Write a new data to the overall database
-            return fs.writeFile("./points_overall.json", JSON.stringify(overallLB), (error) => {
-                if (error) errorLog(`points.js:1 addOverall()\nError to write data to points_overall.json!\nSet ${amount} points to a new ${user.id}(${user.tag}).`, error);
-            });
-        }
-
-        // User is already in the database
-        if (overallLB.find(u => u.id === user.id)) {
-            let addPoints = overallLB.find(u => u.id === user.id).points + amount;
-
-            // Set a new values
-            overallLB.find(u => u.id === user.id).points = addPoints;
-            overallLB.find(u => u.id === user.id).tag = user.tag;
-
-            // Write an update to the overall database
-            return fs.writeFile("./points_overall.json", JSON.stringify(overallLB), error => {
-                if (error) errorLog(`points.js:2 addOverall()\nError to write data to points_overall.json!\nSet ${addPoints} points to ${user.id}(${user.tag}).`, error);
-            });
-        }
-    }
-
-    function delPoints(user, amount) {
-
-        // Block 0 and negative amounts of points to remove
-        if (amount <= 0) return message.channel.send(embedMessage(`You have to remove at least **1** point!`, message.author))
-            .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
-
-        // Load points_current.json file and parse it to javascript object
-        const pointsJSON = fs.readFileSync("./points_current.json", "utf8");
-        var currentLB = JSON.parse(pointsJSON);
-
-        // User is not in the database
-        if (!currentLB.find(u => u.id === user.id)) return message.channel.send(embedMessage(`${user} doesn't have any points yet!`, message.author))
-            .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
-
-        // User is already in the database
-        if (currentLB.find(u => u.id === user.id)) {
-            let delPoints = currentLB.find(u => u.id === user.id).points - amount;
-
-            // Don't allow to have negative points
-            if (delPoints < 0) return message.channel.send(embedMessage(`${user} doesn't have that many points to remove!\nThe final value cannot be below **0** points! (${delPoints.toLocaleString()})`, message.author))
-                .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
-
-            // Set a new values
-            currentLB.find(u => u.id === user.id).points = delPoints;
-            currentLB.find(u => u.id === user.id).tag = user.tag;
-
-            // Remove user from the database if final value is 0 or below
-            if (delPoints <= 0) {
-                // Get user index number from the database and remove
-                const index = currentLB.findIndex(element => element.id === user.id);
-                currentLB.splice(index, 1);
-            }
-
-            // Write an update to the database
-            return fs.writeFile("./points_current.json", JSON.stringify(currentLB), error => {
-                if (error) errorLog(`points.js:1 delPoints()\nError to write data to points_current.json!\nRemove ${amount} points from ${user.id}(${user.tag}).`, error);
-
-                // Remove points from the overall database too
-                delOverall(user, amount);
-
-                // If the user is still on the database
-                if (currentLB.find(u => u.id === user.id)) {
-
-                    // Send an embed message confirmation (user update)
-                    message.channel.send(embedMessage(`Removed **-${amount.toLocaleString()}** points from ${user}!\nNew balance: **${currentLB.find(u => u.id === user.id).points.toLocaleString()}**`, message.author))
-                        .then(info => {
-                            info.delete({ timeout: 10000 })
-                            sendEmbedLog(embedMessageLog(`${message.author} removed -${amount.toLocaleString()} points!`, user), config.BotLog_ChannelID, 'Laezaria Bot Points - Logs');
-                        }).catch(() => { return });
-                } else {
-                    // Send an embed message confirmation (removed all user points)
-                    message.channel.send(embedMessage(`Removed **-${amount.toLocaleString()}** points from ${user}!\nUser doesn't have any points left, so has been removed from the leaderboard!`, message.author))
-                        .then(info => {
-                            info.delete({ timeout: 10000 })
-                            sendEmbedLog(embedMessageLog(`${message.author} removedd -${amount.toLocaleString()} points!`, user), config.BotLog_ChannelID, 'Laezaria Bot Points - Logs');
-                        }).catch(() => { return });
+        async function addPointsHandler(user, amount, folder) {
+            // Try to load the JSON file from the database folder
+            try {
+                fileContent = fs.readFileSync(`./points_system/${folder}/${user.id}.json`, 'utf8');
+            } catch (error) {
+                if (error.message.includes('ENOENT: no such file or directory, open')) {
+                    data = { "id": user.id, "tag": user.tag, "points": amount };
+                    fs.writeFileSync(`./points_system/${folder}/${user.id}.json`, JSON.stringify(data, null, 2));
+                    return true;
                 }
-            });
+                // console.error(`[${folder} add] ERROR to load ${user.tag} file: ${user.id}`, error);
+                return `❌ Error to load user data file!`;
+            }
+
+            // File is found and loaded
+            if (fileContent) {
+                try {
+                    var userDataFile = JSON.parse(fileContent);
+                } catch (error) {
+                    // console.error(`[${folder} add] ERROR: Can't parse ${user.tag} data file: ${user.id}`, error);
+                    return `❌ Error to parse user data file!`;
+                }
+
+                if (userDataFile) {
+                    userDataFile.points = await userDataFile.points + amount;
+                    fs.writeFileSync(`./points_system/${folder}/${user.id}.json`, JSON.stringify(userDataFile, null, 2));
+                    return true;
+                }
+            }
         }
     }
 
-    function delOverall(user, amount) {
+    async function delPoints(user, amount, noteString) {
+        // Block negative, zero, and over 1m of points to remove
+        if (amount <= 0) return 'You have to remove at least **1** point!';
+        if (amount > 1000000) return 'You can remove up to 1 milion points at once!';
 
-        // Load points_overall.json file and parse it to javascript object
-        const delOverallPointsJSON = fs.readFileSync("./points_overall.json", "utf8");
-        var overallLB = JSON.parse(delOverallPointsJSON);
+        if (!noteString) noteString = 'Note is not provided';
+        const noteStringParts = noteString.match(/.{1,500}/g);
 
-        // User is not in the overall database
-        if (!overallLB.find(u => u.id === user.id)) return;
+        if (noteStringParts[1]) noteString = `${noteStringParts[0]}...`;
+        else noteString = noteStringParts[0];
 
-        // User is already in the overall database
-        if (overallLB.find(u => u.id === user.id)) {
-            let delPoints = overallLB.find(u => u.id === user.id).points - amount;
+        var pointsRemovedResultCurrent;
+        var pointsRemovedResultOverall;
 
-            // Set a new values
-            overallLB.find(u => u.id === user.id).points = delPoints;
-            overallLB.find(u => u.id === user.id).tag = user.tag;
+        await delPointsHandler(user, amount, 'current_season').then(x => { pointsRemovedResultCurrent = x });
+        if (pointsRemovedResultCurrent === true) await delPointsHandler(user, amount, 'overall_points').then(x => { pointsRemovedResultOverall = x });
 
-            // Remove user from the overall database if final value is 0 or below
-            if (delPoints <= 0) {
-                // Get user index number from the database and remove
-                const index = overallLB.findIndex(element => element.id === user.id);
-                overallLB.splice(index, 1);
+        if (pointsRemovedResultCurrent === true && pointsRemovedResultOverall === true) {
+            // System Log
+            // console.log(`-----------------------------------------\nLaezaria Points System Log (${user.tag})\ncurrentLB removed ${amount} points: ${pointsRemovedResultCurrent}\noverallLB removed ${amount} points: ${pointsRemovedResultOverall}\nUser information: ${user.id}\n-----------------------------------------`);
+            sendEmbedLog(embedMessageLog(`${message.author} removed -${amount.toLocaleString()} points!\n\ncurrent season file: ✅\noverall points file: ✅\n\nNote: ${noteString}`, user), config.BotLog_ChannelID, 'Laezaria Bot Points - Logs');
+            return `📤 You have removed **-${amount.toLocaleString()}** points from ${user}!`;
+        }
+        else if (pointsRemovedResultCurrent === true && pointsRemovedResultOverall != true) {
+            // System Log
+            // console.log(`-----------------------------------------\nLaezaria Points System Log (${user.tag})\ncurrentLB removed ${amount} points: ${pointsRemovedResultCurrent}\noverallLB removed ${amount} points: ${pointsRemovedResultOverall}\nUser information: ${user.id}\n-----------------------------------------`);
+            sendEmbedLog(embedMessageLog(`${message.author} removed -${amount.toLocaleString()} points!\n\ncurrent season file: ✅\noverall points file: ${pointsRemovedResultOverall}\n\nNote: ${noteString}`, user), config.BotLog_ChannelID, 'Laezaria Bot Points - Logs');
+            return `📤 You have removed **-${amount.toLocaleString()}** points from ${user}!`;
+        }
+        else return pointsRemovedResultCurrent;
+
+        async function delPointsHandler(user, amount, folder) {
+            // Try to load JSON file from the database folder
+            try {
+                fileContent = fs.readFileSync(`./points_system/${folder}/${user.id}.json`, 'utf8')
+            } catch (error) {
+                if (error.message.includes('ENOENT: no such file or directory, open')) return `❌ ${user} doesn't have any points to remove on his account!`;
+                // console.error(`[${folder} del] ERROR to load ${user.tag} file: ${user.id}`, error);
+                return `❌ Error to load user data file!`;
             }
 
-            // Write an update to the overall database
-            return fs.writeFile("./points_overall.json", JSON.stringify(overallLB), error => {
-                if (error) errorLog(`points.js:1 delOverall()\nError to write data to points_overall.json!\nRemove ${amount} points from ${user.id}(${user.tag}).`, error);
-            });
+            // File is found and loaded
+            if (fileContent) {
+                try {
+                    var userDataFile = JSON.parse(fileContent);
+                } catch (error) {
+                    // console.error(`[${folder} del] ERROR: Can't parse ${user.tag} data file: ${user.id}`, error);
+                    return `❌ Error to parse user data file!`;
+                }
+
+                // Update points value
+                userDataFile.points = await userDataFile.points - amount;
+
+                // If user points result is below 0
+                if (userDataFile.points < 0) return `❌ ${user} doesn't have that many points to remove!\nCurrent user balance: ${Math.round(userDataFile.points + amount)}`
+
+                // Check if user has any points left, if not then remove his data file
+                if (userDataFile.points <= 0) {
+                    fs.unlinkSync(`./points_system/${folder}/${user.id}.json`);
+                    return true;
+                } else {
+                    fs.writeFileSync(`./points_system/${folder}/${user.id}.json`, JSON.stringify(userDataFile, null, 2));
+                    return true;
+                }
+            }
         }
     }
 

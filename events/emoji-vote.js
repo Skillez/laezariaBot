@@ -9,8 +9,8 @@ const reactsAmount = 15;
 
 bot.on('ready', async () => {
     // Update Leaderboard Message - https://crontab.guru/examples.html
-    cron.schedule('0 20 * * 7', () => { // At 8:00PM on Sunday.
-        // console.error('emoji-vote.js checkEmojiRequests()', currentUTCDate());
+    cron.schedule('0 20 * * 7', () => { // At 8pm on Sunday.
+        console.log('emoji-vote.js: Checked emoji requests', currentUTCDate());
         checkEmojiRequests();
     });
 

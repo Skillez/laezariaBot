@@ -4,7 +4,7 @@ const config = require("../bot-settings.json");
 module.exports.help = {
     name: "say",
     description: "Sends a message as the bot.",
-    type: "manager",
+    type: "captain",
     usage: `ℹ️ Format: **${config.BotPrefix}say #channel(optional) embed(optional) messageToSend**\n\nℹ️ Examples:\n${config.BotPrefix}say Hello 👋\n${config.BotPrefix}say embed Hello 👋\n${config.BotPrefix}say <#${config.WelcomeChannelID}> Hello 👋\n${config.BotPrefix}say <#${config.WelcomeChannelID}> embed Hello 👋`
 };
 

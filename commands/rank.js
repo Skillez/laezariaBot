@@ -1,6 +1,6 @@
 const config = require("../bot-settings.json");
 const fs = require('fs');
-const { embedMessage } = require("../app");
+const { embedMessage, errorLog } = require("../app");
 
 module.exports.help = {
     name: "rank",
@@ -37,27 +37,46 @@ module.exports.run = async (bot, message, args) => {
     function checkPoints(user) {
 
         // Load points_current.json file and parse it to javascript object
-        const pointsJSON = fs.readFileSync("./points_current.json", "utf8");
-        const points = JSON.parse(pointsJSON);
+        try {
+            const fileContent = fs.readFileSync("./points_system/points_current.json", "utf8");
+            var leaderboardObject = JSON.parse(fileContent);
+        } catch (error) {
+            message.channel.send(embedMessage(`Error to load leaderboard data file!`, message.author))
+                .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
+            return errorLog(`rank.js:1 checkPoints()\nError to LOAD/PARSE 'points_current.json' data file.`, error)
+        }
 
-        // User is not in the database
-        if (!points.find(u => u.id === user.id)) return message.channel.send(embedMessage(`${user} doesn't have any points yet!`, message.author))
-            .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
+        // Load ${user.id}.json file and parse it to javascript object
+        try {
+            var fileUserContent = fs.readFileSync(`./points_system/current_season/${user.id}.json`, "utf8");
+        } catch (error) {
+            if (error.message.includes('ENOENT: no such file or directory, open')) {
+                return message.channel.send(embedMessage(`${user} doesn't have any points yet!`, message.author))
+                    .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
+            } else return errorLog(`rank.js:2 checkPoints()\nError to LOAD '${user.id}.json' data file.`, error);
+        }
 
-        // Sort the points by its values (from the highest to lowest)
-        points.sort(function (a, b) {
-            return b.points - a.points;
-        });
+        try {
+            var userObject = JSON.parse(fileUserContent);
+        } catch (error) {
+            message.channel.send(embedMessage(`Error to parse ${user} data file!`, message.author))
+                .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
+            return errorLog(`rank.js:3 checkPoints()\nError to PARSE '${user.id}.json' data file.`, error);
+        }
+
+        // Define rankingString with an index number +1 or NONE.
+        let rankingString = '';
+        if (!leaderboardObject.find(u => u.id === user.id)) rankingString = 'NONE';
+        else rankingString = `${leaderboardObject.findIndex(element => element.id === user.id) + 1}`;
 
         // Find the leaz emoji
         let laezEmoji = message.guild.emojis.cache.find(emoji => emoji.name === 'laezaria');
         if (!laezEmoji) laezEmoji = '';
 
-        // Get user index number from the sorted database
-        const userRank = points.findIndex(element => element.id === user.id) + 1;
-
-        // User is already in the database
-        if (points.find(u => u.id === user.id)) message.channel.send(embedMessage(`${user} ranking: **${userRank}** out of ${points.length} people.\n${laezEmoji} **${points.find(u => u.id === user.id).points.toLocaleString()}** Laezaria Points!`, message.author))
+        if (rankingString === 'NONE') return message.channel.send(embedMessage(`${user} no ranking yet.\n${laezEmoji} **${userObject.points.toLocaleString()}** Laezaria Points!\n\n> Ranking updates daily at 10:30 AM UTC!`, message.author))
             .then(message => message.delete({ timeout: 60000 })).catch(() => { return });
+        else return message.channel.send(embedMessage(`${user} ranking **${rankingString}** out of ${leaderboardObject.length}.\n${laezEmoji} **${userObject.points.toLocaleString()}** Laezaria Points!\n\n> Ranking updates daily at 10:30 AM UTC!`, message.author))
+            .then(message => message.delete({ timeout: 60000 })).catch(() => { return });
+
     }
 }

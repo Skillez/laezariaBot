@@ -6,7 +6,7 @@ require('console-stamp')(console, 'dd/mm/yyyy - HH:MM:ss');
 const bot = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 
 // define current bot version
-const BotVersion = '1.5';
+const BotVersion = '1.5a';
 
 // define global embed color
 const embedColors = {
@@ -93,7 +93,7 @@ module.exports = {
 
 		if (!bot.users.cache.get(config.BotOwnerID)) return console.warn(`app.js:1 errorLog() ❌ The bot Owner is UNDEFINED (probably wrong userID in: config.BotOwnerID)`);
 		bot.users.cache.get(config.BotOwnerID).send(`❌ an issue occurred with the **${bot.user.username}** application!` + "```" + text + "```" + error)
-			.then(() => console.error(`${text}`, error))
+			.then(() => console.error(`${text}\n`, error))
 			.catch(error => { console.warn(`app.js:2 errorLog() ❌ Owner has DMs disabled.`, error) });
 	},
 

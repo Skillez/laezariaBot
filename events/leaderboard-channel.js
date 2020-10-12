@@ -10,9 +10,9 @@ const cron = require('node-cron');
 bot.on('ready', async () => {
     // Update Leaderboard Messages - https://crontab.guru/examples.html
     cron.schedule('0 13 * * *', () => { // At 1pm daily.
-        // console.error('Updated Leaderboard Message:', currentUTCDate());
-        updateCurrentLeaderboard();
-        updateOverallLeaderboard();
+        console.log('leaderboard-channel.js: Leaderboard message update:', currentUTCDate());
+        updateLeaderboardMessage(config.Leaderboard_Message_CurrentID, 'points_current', 'Season 1');
+        updateLeaderboardMessage(config.Leaderboard_Message_OverallID, 'points_overall', 'Overall', 'peepoIloveu');
     });
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -48,43 +48,68 @@ bot.on('ready', async () => {
         return `${date.getUTCDate()} ${MonthAsString(date.getUTCMonth())} ${date.getUTCFullYear()} • ${formatAMPM(date)} UTC`;
     }
 
-    async function updateCurrentLeaderboard() {
+    function totalPointsLeaderboard(leaderboardFile) {
+        try {
+            const fileContent = fs.readFileSync(`./points_system/${leaderboardFile}.json`, 'utf8');
+            var leaderboardObject = JSON.parse(fileContent);
+        } catch (error) {
+            return 'ERROR';
+        }
 
+        // console.error(leaderboardObject);
+        let totalPointsValue = 0;
+        for (let index = 0; index < leaderboardObject.length; index++) {
+            const element = leaderboardObject[index];
+            // console.error(`index: ${index}`, element);
+            totalPointsValue = totalPointsValue + element.points;
+            // console.error(`index: ${index} - ${totalPointsValue}`);
+        }
+        return totalPointsValue;
+    }
+
+    async function updateLeaderboardMessage(messageID, leaderboardFile, leaderboardName, emojiName) {
         // Get the channel and fetch its last 20 messages
         const leaderboardFetch = await bot.guilds.cache.get(config.LaezariaServerID).channels.cache.get(config.Leaderboard_ChannelID).messages.fetch({ limit: 20 })
-            .catch((error) => errorLog(`leaderboard-channel.js:1 updateLeaderboard()\nError to fetch the messages for the channel.`, error));
+            .catch((error) => errorLog(`leaderboard-channel.js:1 updateLeaderboardMessage()\nError to fetch the messages for the channel.`, error));
 
         // If leaderboardFetch is found
         if (leaderboardFetch) {
 
             // Find the leaderboard message object from the fetch
-            const leaderboardMessage = await leaderboardFetch.find(msg => msg.id === config.Leaderboard_Message_CurrentID);
+            const leaderboardMessage = await leaderboardFetch.find(msg => msg.id === messageID);
             if (leaderboardMessage && leaderboardMessage.author === bot.user) {
 
-                // Load points_current.json file and parse it to javascript object
-                const CurrentPointsJSON = fs.readFileSync("./points_current.json", "utf8");
-                let currentLB = JSON.parse(CurrentPointsJSON);
+                // Load leaderboardFile.json file and parse it to javascript object
+                try {
+                    const pointsJSONfile = fs.readFileSync(`./points_system/${leaderboardFile}.json`, "utf8");
+                    var leaderboardObject = JSON.parse(pointsJSONfile);
+                } catch (error) {
+                    return errorLog(`leaderboard-channel.js:2 updateLeaderboardMessage()\nError to LOAD/PARSE ${leaderboardFile}.json for the ${leaderboardName} leaderboard.`, error);
+                }
 
                 // Sort the points by its values (from the highest to lowest)
-                currentLB.sort(function (a, b) {
+                leaderboardObject.sort(function (a, b) {
                     return b.points - a.points;
                 });
 
                 // Create a string for the leaderboard message with top10 people
                 let currentLeaderboardString = '';
 
-                currentLB.map((user, index) => {
+                let top1Emoji = ` ${leaderboardMessage.guild.emojis.cache.find(emoji => emoji.name === emojiName)}`;
+                if (top1Emoji === ' undefined') top1Emoji = '';
+
+                leaderboardObject.map((user, index) => {
                     switch (Math.round(index + 1)) {
-                        case 1: return currentLeaderboardString = currentLeaderboardString + `> :first_place:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`
-                        case 2: return currentLeaderboardString = currentLeaderboardString + `> :second_place:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`
-                        case 3: return currentLeaderboardString = currentLeaderboardString + `> :third_place:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`
-                        case 4: return currentLeaderboardString = currentLeaderboardString + `> \n> :four:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`
-                        case 5: return currentLeaderboardString = currentLeaderboardString + `> :five:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`
-                        case 6: return currentLeaderboardString = currentLeaderboardString + `> :six:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})}\n`
-                        case 7: return currentLeaderboardString = currentLeaderboardString + `> :seven:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`
-                        case 8: return currentLeaderboardString = currentLeaderboardString + `> :eight:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`
-                        case 9: return currentLeaderboardString = currentLeaderboardString + `> :nine:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`
-                        case 10: return currentLeaderboardString = currentLeaderboardString + `> :keycap_ten:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})‎`
+                        case 1: return currentLeaderboardString = currentLeaderboardString + `> :first_place:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})${top1Emoji}\n`;
+                        case 2: return currentLeaderboardString = currentLeaderboardString + `> :second_place:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`;
+                        case 3: return currentLeaderboardString = currentLeaderboardString + `> :third_place:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`;
+                        case 4: return currentLeaderboardString = currentLeaderboardString + `> \n> :four:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`;
+                        case 5: return currentLeaderboardString = currentLeaderboardString + `> :five:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`;
+                        case 6: return currentLeaderboardString = currentLeaderboardString + `> :six:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})}\n`;
+                        case 7: return currentLeaderboardString = currentLeaderboardString + `> :seven:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`;
+                        case 8: return currentLeaderboardString = currentLeaderboardString + `> :eight:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`;
+                        case 9: return currentLeaderboardString = currentLeaderboardString + `> :nine:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`;
+                        case 10: return currentLeaderboardString = currentLeaderboardString + `> :keycap_ten:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})‎`;
                         default: break;
                     }
                 });
@@ -97,78 +122,22 @@ bot.on('ready', async () => {
                 if (!loadingEmoji) loadingEmoji = '';
 
                 // leaderboardMessage with 10 people on the leaderboard
-                if (currentLB[9]) {
-                    // Chose a fun fact info ID
+                if (leaderboardObject[9]) {
+                    // Choose a fun fact info ID
                     const randomPersonFromLB = Math.floor(Math.random() * 10);
-                    const totalPointsCurrent = Math.round(currentLB[0].points + currentLB[1].points + currentLB[2].points + currentLB[3].points + currentLB[4].points + currentLB[5].points + currentLB[6].points + currentLB[7].points + currentLB[8].points + currentLB[9].points);
-                    const percentageCurrent = (currentLB[randomPersonFromLB].points / totalPointsCurrent) * 100;
+                    const percentageLB = (leaderboardObject[randomPersonFromLB].points / totalPointsLeaderboard(leaderboardFile)) * 100;
 
-                    leaderboardMessage.edit(`**Current Season Leaderboard!**\n${currentLeaderboardString}\n\nFull Leaderboard: <https://leaderboard.skillez.eu>\n ${loadingEmoji} Last update: ${currentUTCDate()}\n*Fun fact: Top10 has ${totalPointsCurrent.toLocaleString()} points in total, and ${currentLB[randomPersonFromLB].tag} contributed ~${percentageCurrent.toFixed(2)}% of these points!*\n ‎`, 'Leaderboard Update')
+                    leaderboardMessage.edit(`**${leaderboardName} Leaderboard!**\n${currentLeaderboardString}\n\nFull Leaderboard: <https://leaderboard.skillez.eu>\n ${loadingEmoji} Last update: ${currentUTCDate()}\n*${leaderboardName} leaderboard has ${totalPointsLeaderboard(leaderboardFile).toLocaleString()} points in total, and ${leaderboardObject[randomPersonFromLB].tag} contributed ~${percentageLB.toFixed(2)}% of these points!*\n ‎`, 'Leaderboard Update')
                         // .then(() => console.log(`Current Leaderboard message has been updated! ${leaderboardMessage.content.length}`))
-                        .catch(error => errorLog(`leaderboard-channel.js:2 updateLeaderboard()\nError to edit the message!.`, error));
+                        .catch(error => errorLog(`leaderboard-channel.js:3 updateLeaderboardMessage()\nError to edit the message!.`, error));
                 } else {
                     // If leaderboard has less than 10 people
-                    leaderboardMessage.edit(`**Current season leaderboard!**\n${currentLeaderboardString}\n\nFull Leaderboard: <https://leaderboard.skillez.eu>\n ${loadingEmoji} Last update: ${currentUTCDate()}\n ‎`, 'Leaderboard Update')
+                    leaderboardMessage.edit(`**${leaderboardName} leaderboard!**\n${currentLeaderboardString}\n\nFull Leaderboard: <https://leaderboard.skillez.eu>\n ${loadingEmoji} Last update: ${currentUTCDate()}\n ‎`, 'Leaderboard Update')
                         // .then(() => console.log(`Current Leaderboard message has been updated! ${leaderboardMessage.content.length}`))
-                        .catch(error => errorLog(`leaderboard-channel.js:3 updateLeaderboard()\nError to edit the message!.`, error));
+                        .catch(error => errorLog(`leaderboard-channel.js:4 updateLeaderboardMessage()\nError to edit the message!.`, error));
                 }
 
-            } else return errorLog(`leaderboard-channel.js:4 updateLeaderboard()\nLeaderboard channel is empty or missing READ_MESSAGE_HISTORY or incorrect 'Leaderboard_Message_CurrentID' in config file or defined message is not sent by the bot or message has been removed!`);
-        }
-    }
-
-    async function updateOverallLeaderboard() {
-
-        // Get the channel and fetch its last 20 messages
-        const leaderboardFetch = await bot.guilds.cache.get(config.LaezariaServerID).channels.cache.get(config.Leaderboard_ChannelID).messages.fetch({ limit: 20 })
-            .catch((error) => errorLog(`leaderboard-channel.js:1 updateOverallLeaderboard()\nError to fetch the messages for the channel.`, error));
-
-        // If leaderboardFetch is found
-        if (leaderboardFetch) {
-
-            // Find the leaderboard message object from the fetch
-            const leaderboardMessage = await leaderboardFetch.find(msg => msg.id === config.Leaderboard_Message_OverallID);
-            if (leaderboardMessage && leaderboardMessage.author === bot.user) {
-
-                // Load points_overall.json file and parse it to javascript object
-                const OverallPointsJSON = fs.readFileSync("./points_overall.json", "utf8");
-                let overallLB = JSON.parse(OverallPointsJSON);
-
-                // Sort the points by its values (from the highest to lowest)
-                overallLB.sort(function (a, b) {
-                    return b.points - a.points;
-                });
-
-                // Create a string for the leaderboard message with top10 people
-                let currentLeaderboardString = '';
-                let top1emoji = leaderboardMessage.guild.emojis.cache.find(emoji => emoji.name === 'peepoIloveu');
-                if (!top1emoji) top1emoji = '';
-
-                overallLB.map((user, index) => {
-                    switch (Math.round(index + 1)) {
-                        case 1: return currentLeaderboardString = currentLeaderboardString + `> :first_place:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag}) ${top1emoji}\n`
-                        case 2: return currentLeaderboardString = currentLeaderboardString + `> :second_place:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`
-                        case 3: return currentLeaderboardString = currentLeaderboardString + `> :third_place:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`
-                        case 4: return currentLeaderboardString = currentLeaderboardString + `> \n> :four:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`
-                        case 5: return currentLeaderboardString = currentLeaderboardString + `> :five:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`
-                        case 6: return currentLeaderboardString = currentLeaderboardString + `> :six:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})}\n`
-                        case 7: return currentLeaderboardString = currentLeaderboardString + `> :seven:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`
-                        case 8: return currentLeaderboardString = currentLeaderboardString + `> :eight:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`
-                        case 9: return currentLeaderboardString = currentLeaderboardString + `> :nine:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})\n`
-                        case 10: return currentLeaderboardString = currentLeaderboardString + `> :keycap_ten:    **${user.points.toLocaleString()}** points from <@${user.id}> (${user.tag})‎`
-                        default: break;
-                    }
-                });
-
-                // If Leaderboard ranking is empty
-                if (!currentLeaderboardString) currentLeaderboardString = 'Donate something to be the 1st one!';
-
-                // Edit the message with new update
-                leaderboardMessage.edit(`**Overall Leaderboard!**\n${currentLeaderboardString}\n ‎`, 'Leaderboard Update')
-                    // .then(() => console.log(`Overall Leaderboard message has been updated! ${leaderboardMessage.content.length}`))
-                    .catch(error => errorLog(`leaderboard-channel.js:3 updateOverallLeaderboard()\nError to edit the message!.`, error));
-
-            } else return errorLog(`leaderboard-channel.js:4 updateOverallLeaderboard()\nLeaderboard channel is empty or missing READ_MESSAGE_HISTORY or incorrect 'Leaderboard_Message_OverallID' in config file or defined message is not sent by the bot or message has been removed!`);
+            } else return errorLog(`leaderboard-channel.js:5 updateLeaderboardMessage()\nLeaderboard channel is empty or missing READ_MESSAGE_HISTORY or incorrect ${leaderboardFile} provided or defined message is not sent by the bot or message has been removed!`);
         }
     }
 });

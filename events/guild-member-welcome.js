@@ -3,7 +3,7 @@ const config = require("../bot-settings.json");
 
 // const fs = require('fs');
 const { createCanvas, loadImage } = require('canvas');
-const canvas = createCanvas(1650, 500);
+const canvas = createCanvas(1550, 400);
 const ctx = canvas.getContext('2d');
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -19,7 +19,7 @@ bot.on('guildMemberAdd', async member => {
     if (!welcomeChannel) return;
 
     // Reset the canvas
-    ctx.clearRect(0, 0, 1650, 500);
+    ctx.clearRect(0, 0, 1550, 400);
 
     const backgroundImg = await loadImage('images/background.png');
     // const avatarOutline = await loadImage('images/circleForAvatar.png');
@@ -50,25 +50,35 @@ bot.on('guildMemberAdd', async member => {
     // console.log(centerUsername + 'px');
     // console.error(`Max username length: 700\nUsername length: ${ctx.measureText(member.user.username).width}\nHalf of that: ${ctx.measureText(member.user.username).width / 2}`);
 
-    ctx.fillText(member.user.username, 874 + centerUsername, 326);
+    ctx.fillText(member.user.username, 837 + centerUsername, 266);
 
     // Draw a user count
     ctx.font = '36px Penumbra Serif Std Bold';
     ctx.fillStyle = '#ffffff';
 
     const numberString = member.guild.members.cache.size.toString().slice(-1);
-    if (numberString === '1') ctx.fillText(`As our ${member.guild.members.cache.size}st member!`, 725, 415);
-    else if (numberString === '2') ctx.fillText(`As our ${member.guild.members.cache.size}nd member!`, 725, 415);
-    else if (numberString === '3') ctx.fillText(`As our ${member.guild.members.cache.size}rd member!`, 725, 415);
-    else ctx.fillText(`As our ${member.guild.members.cache.size}th member!`, 725, 415);
-
-    // const stringTest = '6969'
-    // const numberString = stringTest.slice(-1);
-    // if (numberString === '1') ctx.fillText(`As our ${stringTest}st member!`, 725, 415);
-    // else if (numberString === '2') ctx.fillText(`As our ${stringTest}nd member!`, 725, 415);
-    // else if (numberString === '3') ctx.fillText(`As our ${stringTest}rd member!`, 725, 415);
-    // else ctx.fillText(`As our ${stringTest}th member!`, 725, 415);
-
+    switch (numberString) {
+        case '1': {
+            const memberCountString = `${member.guild.members.cache.size}st member!`;
+            const centerMemberCountText = Math.round((397 - ctx.measureText(memberCountString).width) / 2);
+            ctx.fillText(memberCountString, 989 + centerMemberCountText, 346);
+        }
+        case '2': {
+            const memberCountString = `${member.guild.members.cache.size}nd member!`;
+            const centerMemberCountText = Math.round((397 - ctx.measureText(memberCountString).width) / 2);
+            ctx.fillText(memberCountString, 989 + centerMemberCountText, 346);
+        }
+        case '3': {
+            const memberCountString = `${member.guild.members.cache.size}rd member!`;
+            const centerMemberCountText = Math.round((397 - ctx.measureText(memberCountString).width) / 2);
+            ctx.fillText(memberCountString, 989 + centerMemberCountText, 346);
+        }
+        default: {
+            const memberCountString = `${member.guild.members.cache.size}th member!`;
+            const centerMemberCountText = Math.round((397 - ctx.measureText(memberCountString).width) / 2);
+            ctx.fillText(memberCountString, 989 + centerMemberCountText, 346);
+        }
+    }
 
     // // Draw user avatar on owl's head
     // ctx.drawImage(await roundedAvatar(), 414, 87, 163, 163);
@@ -87,13 +97,13 @@ bot.on('guildMemberAdd', async member => {
     if (!welcomeEmojiLaezaria) welcomeEmojiLaezaria = '';
     if (!welcomeEmojiEnjoy) welcomeEmojiEnjoy = '';
 
-    const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'welcome-test.png');
+    const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'laezaria-welcome.png');
     await welcomeChannel.send(`${member} - Welcome to **Laezaria** ${welcomeEmojiLaezaria}! Check out the <#${config.InformationChannelID}> channel. Enjoy your stay ${welcomeEmojiEnjoy}`, attachment)
         .then(message => message.react(welcomeEmojiReact).catch(() => { return }))
         .catch((() => { return }));
 
     // Reset the canvas
-    ctx.clearRect(0, 0, 1650, 500);
+    ctx.clearRect(0, 0, 1550, 400);
 
     //////////////////////////////////////////////////////////////////////////////////////////////
 
