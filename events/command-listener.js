@@ -34,15 +34,24 @@ bot.on("message", async message => {
                 if (message.member.roles.cache.some(role => role.id === config.ManagerRoleID)
                     || message.member.roles.cache.some(role => role.id === config.ViceRoleID)
                     || message.member.roles.cache.some(role => role.id === config.SenpaiRoleID)) return cmdFile.run(bot, message, args);
-                else return message.reply(`You have insufficient permissions!‏‏‎\nOnly the **manager** can use **${config.BotPrefix}${cmdFile.help.name}** command!`)
+                else return message.reply(`You have insufficient permissions!‏‏‎\nOnly the **manager+** can use **${config.BotPrefix}${cmdFile.help.name}** command!`)
+                    .then(message => message.delete({ timeout: 10000 })).catch(() => { return; });
+            }
+            case "enforcer": {
+                if (message.member.roles.cache.some(role => role.id === config.EnforcerRoleID)
+                    || message.member.roles.cache.some(role => role.id === config.ManagerRoleID)
+                    || message.member.roles.cache.some(role => role.id === config.ViceRoleID)
+                    || message.member.roles.cache.some(role => role.id === config.SenpaiRoleID)) return cmdFile.run(bot, message, args);
+                else return message.reply(`You have insufficient permissions!‏‏‎\nOnly the **enforcer+** can use **${config.BotPrefix}${cmdFile.help.name}** command!`)
                     .then(message => message.delete({ timeout: 10000 })).catch(() => { return; });
             }
             case "captain": {
                 if (message.member.roles.cache.some(role => role.id === config.CaptainRoleID)
+                    || message.member.roles.cache.some(role => role.id === config.EnforcerRoleID)
                     || message.member.roles.cache.some(role => role.id === config.ManagerRoleID)
                     || message.member.roles.cache.some(role => role.id === config.ViceRoleID)
                     || message.member.roles.cache.some(role => role.id === config.SenpaiRoleID)) return cmdFile.run(bot, message, args);
-                else return message.reply(`You have insufficient permissions!‏‏‎\nOnly the **captain** can use **${config.BotPrefix}${cmdFile.help.name}** command!`)
+                else return message.reply(`You have insufficient permissions!‏‏‎\nOnly the **captain+** can use **${config.BotPrefix}${cmdFile.help.name}** command!`)
                     .then(message => message.delete({ timeout: 10000 })).catch(() => { return; });
             }
             case "public": return cmdFile.run(bot, message, args);

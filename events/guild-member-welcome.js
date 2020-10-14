@@ -52,31 +52,34 @@ bot.on('guildMemberAdd', async member => {
 
     ctx.fillText(member.user.username, 837 + centerUsername, 266);
 
-    // Draw a user count
+    // Fuction to draw member count
     ctx.font = '36px Penumbra Serif Std Bold';
     ctx.fillStyle = '#ffffff';
 
     const numberString = member.guild.members.cache.size.toString().slice(-1);
-    switch (numberString) {
-        case '1': {
-            const memberCountString = `${member.guild.members.cache.size}st member!`;
-            const centerMemberCountText = Math.round((397 - ctx.measureText(memberCountString).width) / 2);
-            ctx.fillText(memberCountString, 989 + centerMemberCountText, 346);
-        }
-        case '2': {
-            const memberCountString = `${member.guild.members.cache.size}nd member!`;
-            const centerMemberCountText = Math.round((397 - ctx.measureText(memberCountString).width) / 2);
-            ctx.fillText(memberCountString, 989 + centerMemberCountText, 346);
-        }
-        case '3': {
-            const memberCountString = `${member.guild.members.cache.size}rd member!`;
-            const centerMemberCountText = Math.round((397 - ctx.measureText(memberCountString).width) / 2);
-            ctx.fillText(memberCountString, 989 + centerMemberCountText, 346);
-        }
-        default: {
-            const memberCountString = `${member.guild.members.cache.size}th member!`;
-            const centerMemberCountText = Math.round((397 - ctx.measureText(memberCountString).width) / 2);
-            ctx.fillText(memberCountString, 989 + centerMemberCountText, 346);
+    MemberCountFunc(numberString);
+    function MemberCountFunc(numberString) {
+        switch (numberString) {
+            case '1': {
+                const memberCountString = `${member.guild.members.cache.size}st member!`;
+                const centerMemberCountText = Math.round((397 - ctx.measureText(memberCountString).width) / 2);
+                return ctx.fillText(memberCountString, 989 + centerMemberCountText, 346);
+            }
+            case '2': {
+                const memberCountString = `${member.guild.members.cache.size}nd member!`;
+                const centerMemberCountText = Math.round((397 - ctx.measureText(memberCountString).width) / 2);
+                return ctx.fillText(memberCountString, 989 + centerMemberCountText, 346);
+            }
+            case '3': {
+                const memberCountString = `${member.guild.members.cache.size}rd member!`;
+                const centerMemberCountText = Math.round((397 - ctx.measureText(memberCountString).width) / 2);
+                return ctx.fillText(memberCountString, 989 + centerMemberCountText, 346);
+            }
+            default: {
+                const memberCountString = `${member.guild.members.cache.size}th member!`;
+                const centerMemberCountText = Math.round((397 - ctx.measureText(memberCountString).width) / 2);
+                return ctx.fillText(memberCountString, 989 + centerMemberCountText, 346);
+            }
         }
     }
 
