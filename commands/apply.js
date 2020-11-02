@@ -3,7 +3,7 @@ const config = require("../bot-settings.json");
 
 module.exports.help = {
     name: "apply",
-    description: "The official way to join our club with an interactive system.",
+    description: "Official way to join our club with an interactive system.",
     type: "public",
     usage: "Type the command and follow instructions."
 };
@@ -20,8 +20,11 @@ module.exports.run = async (bot, message) => {
     }
 
     if (message.member.roles.cache.some(role => role.id === config.GuestRoleID))
-        return message.reply(`Hello!\nThank you for your interest to join **${bot.guilds.cache.get(config.LaezariaServerID).name}** <:laezaria:582281105298817032>\nUnfortunately, you can't apply at the moment.\nPlease take some time to familiarise yourself with our <#${config.InformationChannelID}> channel before you proceed to send an application.`)
-            .then(message => message.delete({ timeout: 20000 })).catch(() => { return });
+        return setTimeout(() => {
+            GuestQuestion1();
+        }, 1000);
+    // message.reply(`Hello!\nThank you for your interest to join **${bot.guilds.cache.get(config.LaezariaServerID).name}** <:laezaria:582281105298817032>\nUnfortunately, you can't apply at the moment.\nPlease take some time to familiarise yourself with our <#${config.InformationChannelID}> channel before you proceed to send an application.`)
+    //     .then(message => message.delete({ timeout: 20000 })).catch(() => { return });
 
     if (message.member.roles.cache.some(role => role.id === config.MemberRoleID))
         return message.reply(`Hello!\nIt seems that you are an ex-member of the club, if you would like to rejoin the club, please contact any of our club's staffs (senpai, manager).`)
@@ -64,17 +67,17 @@ module.exports.run = async (bot, message) => {
         return message.reply(`Missing ${bot.user} bot permissions, contact discord admin to fix that issue.`).then(message => { message.delete({ timeout: 10000 }) });
     }
 
-    if (!appStorageChannel.permissionsFor(message.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY'])) { // requirement for application storage channel
+    else if (!appStorageChannel.permissionsFor(message.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY'])) { // requirement for application storage channel
         errorLog(`apply.js:3 Not enough permissions for the #${appStorageChannel.name} channel.\n[SEND_MESSAGES - EMBED_LINKS - ATTACH_FILES - READ_MESSAGE_HISTORY]`, undefined)
         return message.reply(`Missing ${bot.user} bot permissions, contact discord admin to fix that issue.`).then(message => { message.delete({ timeout: 10000 }) });
     }
 
-    if (!appProcessChannel.permissionsFor(message.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'])) { // requirement for application storage channel
+    else if (!appProcessChannel.permissionsFor(message.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'])) { // requirement for application storage channel
         errorLog(`apply.js:4 Not enough permissions for the #${appProcessChannel.name} channel.\n[SEND_MESSAGES - EMBED_LINKS - ADD_REACTIONS - READ_MESSAGE_HISTORY]`, undefined)
         return message.reply(`Missing ${bot.user} bot permissions, contact discord admin to fix that issue.`).then(message => { message.delete({ timeout: 10000 }) });
     }
 
-    if (!botPermission('MANAGE_NICKNAMES')) {
+    else if (!botPermission('MANAGE_NICKNAMES')) {
         errorLog(`apply.js:5 Not enough permissions for the application system [MANAGE_NICKNAMES].`, undefined)
         return message.reply(`Missing ${bot.user} bot permissions, contact discord admin to fix that issue.`).then(message => { message.delete({ timeout: 10000 }) });
     }
@@ -92,8 +95,8 @@ module.exports.run = async (bot, message) => {
 
                     if (ReadyAnswer.first().content.toLowerCase() === 'ready') {
                         removeUserLastMessage(message.author); // remove after user typed ready
-                        setTimeout(() => {
-                            return Question1();
+                        return setTimeout(() => {
+                            Question1();
                         }, 1000);
 
                     } else { // if something else than ready was typed
@@ -113,6 +116,54 @@ module.exports.run = async (bot, message) => {
         });
 
     /////////////////////////////////////////////////////////////////////////////////////////
+
+    function GuestQuestion1() { // Ask if applicant read information channel
+        const filter = m => m.author.id === message.author.id;
+        return message.reply(`Did you read <#${config.InformationChannelID}> channel and you aware of our guidelines/rules? (Yes/No)\n(or type cancel to stop)`)
+            .then(Question => {
+                message.channel.awaitMessages(filter, { max: 1, time: 180000 })
+                    .then(Answer => {
+                        Question.delete().catch(() => { return }); // remove bot question after answer is sent
+                        if (Answer.first().content.startsWith(config.BotPrefix)) return; // stop the application if other command was typed
+
+                        if (Answer.first().content.toLowerCase() === 'exit' || Answer.first().content.toLowerCase() === 'cancel') { // if user want to stop
+                            removeUserLastMessage(message.author); // remove after user typed answer
+                            return message.channel.send(`${message.author} ❌ Cancelling...`)
+                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message - ready check
+                        }
+
+                        if (!Answer.first().content) { // if answer has no message content aka attachment added or some shit like that.
+                            removeUserLastMessage(message.author); // remove after user typed answer
+                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Your answer is too short.`)
+                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
+                        }
+
+                        if (Answer.first().content.toLowerCase() === 'yes' || Answer.first().content.toLowerCase() === 'y' || Answer.first().content.toLowerCase() === 'ye') {
+                            removeUserLastMessage(message.author); // remove after user typed answer
+                            return message.channel.send(`❌ ${message.author}, Why do you have a guest role then? 🤔\nGo to the <#${config.InformationChannelID}> channel and read how to get rid of this role and try again.`)
+                                .then(message => message.delete({ timeout: 15000 })).catch(() => { return }); // remove bot exit request message.
+                        }
+
+                        if (Answer.first().content.toLowerCase() === 'no' || Answer.first().content.toLowerCase() === 'n' || Answer.first().content.toLowerCase() === 'nah') {
+                            removeUserLastMessage(message.author); // remove after user typed answer
+                            return message.channel.send(`❌ ${message.author}, Well, at least you are honest with us, but please go to the <#${config.InformationChannelID}> channel read how to remove a guest role from your account and try again ;)`)
+                                .then(message => message.delete({ timeout: 15000 })).catch(() => { return }); // remove bot exit request message.
+                        }
+
+                        if (Answer.first().content.toLowerCase() === 'idc') {
+                            removeUserLastMessage(message.author); // remove after user typed answer
+                            return message.channel.send(`✅ Excellent answer ${message.author}!\nYou have been promoted to an **officer**!`)
+                                .then(message => message.delete({ timeout: 10000 })).catch(() => { return }); // remove bot exit request message.
+                        }
+                    }).catch(error => {
+                        if (error.message === "Cannot read property 'content' of undefined") return message.channel.send(`${message.author} ❌ There was no message within the time limit (3mins)! - cancelling...`)
+                            .then(message => message.delete({ timeout: 30000 })).catch(() => { return }); // remove bot info about time ran out
+
+                        removeUserLastMessage(message.author); // remove after user typed answer
+                        errorLog(`apply.js:1 GuestQuestion1()\nError when user answer the question.`, error);
+                    });
+            });
+    }
 
     function Question1() { // In-game nick question
         return message.channel.send(`Alright, ${message.author} let's start with something easy, what is your **in-game name**?\n(or type cancel to stop)`)
@@ -141,9 +192,10 @@ module.exports.run = async (bot, message) => {
                         }
 
                         removeUserLastMessage(message.author); // remove after user typed answer
-                        // let Answer1 = Answer.first().content;
-                        setTimeout(() => {
-                            return Question2(Answer.first().content);
+                        // let nickName = Answer.first().content;
+                        return setTimeout(() => {
+                            // return Question2(Answer.first().content);
+                            refferalQuestion1(Answer.first().content, message.author);
                         }, 1000);
 
                     }).catch(error => {
@@ -156,8 +208,118 @@ module.exports.run = async (bot, message) => {
             });
     }
 
-    function Question2(Answer1) { // Trove mastery points question
-        return message.reply(`Hey ${Answer1}, what is your **TROVE Mastery Points**?\n(or type cancel to stop)`)
+    function refferalQuestion1(nickName, applicationAuthor) {
+        return message.reply(`Have you been referred by our staff(enforcer+)?`)
+            .then(async Question => {
+                try {
+                    await Question.react('✅');
+                    await Question.react('❌');
+                } catch (error) {
+                    message.channel.send(`An unknown error occured ;(`)
+                        .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
+                    errorLog(`apply.js:1 refferalQuestion1()\nError to add reactions probably wrong emojis.`, error)
+                }
+
+                const emojiFilter = (reaction, user) => {
+                    return ['✅', '❌'].includes(reaction.emoji.name) && !user.bot && applicationAuthor === user;
+                }
+
+                Question.awaitReactions(emojiFilter, { max: 1, time: 180000 })
+                    .then(collected => {
+                        const reaction = collected.first();
+
+                        if (reaction.emoji.name === '✅') {
+                            return Question.delete().catch(() => { return })
+                                .then(() => {
+                                    return setTimeout(() => {
+                                        // console.log(`${applicationAuthor.tag} reacted with ✅`);
+                                        refferalQuestion2(nickName);
+                                    }, 1000);
+                                })
+                        }
+
+                        if (reaction.emoji.name === '❌') {
+                            return Question.delete().catch(() => { return })
+                                .then(() => {
+                                    return setTimeout(() => {
+                                        // console.log(`${applicationAuthor.tag} reacted with ❌`);
+                                        Question2('None', nickName);
+                                    }, 1000);
+                                })
+                        }
+                    })
+                    .catch(error => {
+                        if (error.message === "Cannot read property 'emoji' of undefined") return message.channel.send(`${message.author} ❌ There was no reaction within the time limit (3mins)! - cancelling...`)
+                            .then(message => {
+                                message.delete({ timeout: 30000 }).catch(() => { return });
+                                Question.delete().catch(() => { return });
+                            }); // remove bot info about time ran out
+
+                        removeUserLastMessage(message.author); // remove after user typed answer
+                        errorLog(`apply.js:2 previewConfirmation()\nError when user answer the question.`, error);
+                    });
+            });
+    }
+
+    function refferalQuestion2(nickName) {
+        return message.reply(`please mention enforcer+ that reffered you.\n(or type cancel to stop)`)
+            .then(Question => {
+                message.channel.awaitMessages(filter, { max: 1, time: 180000 })
+                    .then(Answer => {
+                        Question.delete().catch(() => { return }); // remove bot question after answer is sent
+                        if (Answer.first().content.startsWith(config.BotPrefix)) return; // stop the application if other command was typed
+
+                        if (Answer.first().content.toLowerCase() === 'exit' || Answer.first().content.toLowerCase() === 'cancel') { // if user want to stop
+                            removeUserLastMessage(message.author); // remove after user typed answer
+                            return message.channel.send(`${message.author} ❌ Cancelling...`)
+                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message - ready check
+                        }
+
+                        if (Answer.first().content.startsWith('<@') && Answer.first().content.endsWith('>')) {
+                            const ReplaceMentionToID = Answer.first().content.replace(/[\\<>@#&!]/g, ""); // replace mention to an ID
+
+                            const referralGuildMember = message.guild.members.cache.get(ReplaceMentionToID);
+                            if (referralGuildMember) {
+
+                                if (referralGuildMember.roles.cache.some(role => role.id === config.SenpaiRoleID)
+                                    || referralGuildMember.roles.cache.some(role => role.id === config.ViceRoleID)
+                                    || referralGuildMember.roles.cache.some(role => role.id === config.ManagerRoleID)
+                                    || referralGuildMember.roles.cache.some(role => role.id === config.EnforcerRoleID)) {
+                                    removeUserLastMessage(message.author); // remove after user typed answer
+                                    return setTimeout(() => {
+                                        console.log(`refferalQuestion2 finished`);
+                                        console.error(`Referred: ${referralGuildMember.user.tag} and has Senpai/Vice/Manager or Enforcer role.`);
+                                        Question2(referralGuildMember.user, nickName);
+                                    }, 1000);
+                                } else {
+                                    removeUserLastMessage(message.author); // remove after user typed answer
+                                    return message.channel.send(`${message.author} ❌ The application has been cancelled - Your referral is not enforcer+.`)
+                                        .then(message => message.delete({ timeout: 5000 })).catch(() => { return }) // remove bot exit request message.
+                                }
+                            } else {
+                                removeUserLastMessage(message.author); // remove after user typed answer
+                                return message.channel.send(`${message.author} ❌ The application has been cancelled - Invalid referral.`)
+                                    .then(message => message.delete({ timeout: 5000 })).catch(() => { return }) // remove bot exit request message.
+                            }
+                        } else {
+                            removeUserLastMessage(message.author); // remove after user typed answer
+                            return message.channel.send(`${message.author} ❌ The application has been cancelled - You didn't mention referral.`)
+                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }) // remove bot exit request message.
+                            // .then(refferalQuestion2(nickName));
+                        }
+
+                    }).catch(error => {
+                        if (error.message === "Cannot read property 'content' of undefined") return message.channel.send(`${message.author} ❌ There was no message within the time limit (3mins)! - cancelling...`)
+                            .then(message => message.delete({ timeout: 30000 })).catch(() => { return }); // remove bot info about time ran out
+
+                        removeUserLastMessage(message.author); // remove after user typed answer
+                        errorLog(`apply.js:1 Question1()\nError when user answer the question.`, error);
+                    });
+            });
+    }
+
+    function Question2(appReferral, nickName) { // Trove mastery points question
+        return message.reply(`Hey ${nickName}, what is your **TROVE Mastery Points**?\n(or type cancel to stop)`)
             .then(Question => {
                 message.channel.awaitMessages(filter, { max: 1, time: 180000 })
                     .then(Answer => {
@@ -176,23 +338,22 @@ module.exports.run = async (bot, message) => {
                                 .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
                         }
 
-                        let replaceAnswer2Number = Answer.first().content.replace(/[., ]/g, ""); // replace answer to number
-                        if (isNaN(replaceAnswer2Number) === true) { // if answer is not a number
+                        let replace2Number = Answer.first().content.replace(/[., ]/g, ""); // replace answer to number
+                        if (isNaN(replace2Number) === true) { // if answer is not a number
                             removeUserLastMessage(message.author); // remove after user typed answer
                             return message.channel.send(`${message.author} ❌ The application has been cancelled - Your answer is not a number.`)
                                 .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
                         }
 
-                        if (replaceAnswer2Number > 150000) { // Check TROVE mastery points - upper limit 150,000 points
+                        if (replace2Number > 150000) { // Check TROVE mastery points - upper limit 150,000 points
                             removeUserLastMessage(message.author); // remove after user typed answer
                             return message.channel.send(`${message.author} ❌ The application has been cancelled - Your Trove Mastery Points are too high.`)
                                 .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
                         }
 
                         removeUserLastMessage(message.author); // remove after user typed answer
-                        // let Answer2 = Answer.first().content;
-                        setTimeout(() => {
-                            return Question3(Answer1, Number(replaceAnswer2Number));
+                        return setTimeout(() => {
+                            Question3(appReferral, nickName, Number(replace2Number));
                         }, 1000);
 
                     }).catch(error => {
@@ -205,7 +366,7 @@ module.exports.run = async (bot, message) => {
             });
     }
 
-    function Question3(Answer1, Answer2) { // Geode mastery points question
+    function Question3(appReferral, nickName, trovePoints) { // Geode mastery points question
         return message.reply(`What is your **GEODE Mastery Points**?\n(or type cancel to stop)`)
             .then(Question => {
                 message.channel.awaitMessages(filter, { max: 1, time: 180000 })
@@ -225,22 +386,21 @@ module.exports.run = async (bot, message) => {
                                 .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
                         }
 
-                        let replaceAnswer3Number = Answer.first().content.replace(/[., ]/g, ""); // replace answer to number
-                        if (isNaN(replaceAnswer3Number) === true) { // if answer is not a number
+                        let replace2Number = Answer.first().content.replace(/[., ]/g, ""); // replace answer to number
+                        if (isNaN(replace2Number) === true) { // if answer is not a number
                             removeUserLastMessage(message.author); // remove after user typed answer
                             return message.channel.send(`${message.author} ❌ The application has been cancelled - Your answer is not a number.`)
                                 .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
                         }
 
-                        if (replaceAnswer3Number > 20000) { // Check GEODE mastery points - upper limit - 20,000 points
+                        if (replace2Number > 20000) { // Check GEODE mastery points - upper limit - 20,000 points
                             return message.channel.send(`${message.author} ❌ The application has been cancelled - Your Geode Mastery Points are too high.`)
                                 .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
                         }
 
                         removeUserLastMessage(message.author); // remove after user typed answer
-                        // let Answer2 = Answer.first().content;
-                        setTimeout(() => {
-                            return Question4(Answer1, Answer2, Number(replaceAnswer3Number));
+                        return setTimeout(() => {
+                            Question4(appReferral, nickName, trovePoints, Number(replace2Number));
                         }, 1000);
 
                     }).catch(error => {
@@ -253,7 +413,7 @@ module.exports.run = async (bot, message) => {
             });
     }
 
-    function Question4(Answer1, Answer2, Answer3) { // Power rank question
+    function Question4(appReferral, nickName, trovePoints, geodePoints) { // Power rank question
         return message.reply(`What is your **highest Power Rank**?\n(or type cancel to stop)`)
             .then(Question => {
                 message.channel.awaitMessages(filter, { max: 1, time: 180000 })
@@ -273,23 +433,22 @@ module.exports.run = async (bot, message) => {
                                 .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
                         }
 
-                        let replaceAnswer4Number = Answer.first().content.replace(/[., ]/g, ""); // replace answer to number
-                        if (isNaN(replaceAnswer4Number) === true) { //if answer is not a number
+                        let replace2Number = Answer.first().content.replace(/[., ]/g, ""); // replace answer to number
+                        if (isNaN(replace2Number) === true) { //if answer is not a number
                             removeUserLastMessage(message.author); // remove after user typed answer
                             return message.channel.send(`${message.author} ❌ The application has been cancelled - Your answer is not a number.`)
                                 .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
                         }
 
-                        if (replaceAnswer4Number > 45000) { // Check Power Rank - upper limit - 45,000 points
+                        if (replace2Number > 45000) { // Check Power Rank - upper limit - 45,000 points
                             removeUserLastMessage(message.author); // remove after user typed answer
                             return message.channel.send(`${message.author} ❌ The application has been cancelled - Your highest Power Rank is too high.`)
                                 .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
                         }
 
                         removeUserLastMessage(message.author); // remove after user typed answer
-                        // let Answer3 = Answer.first().content;
-                        setTimeout(() => {
-                            return RequirementsCheck(Answer1, Answer2, Answer3, Number(replaceAnswer4Number));
+                        return setTimeout(() => {
+                            RequirementsCheck(appReferral, nickName, trovePoints, geodePoints, Number(replace2Number));
                         }, 1000);
 
                     }).catch(error => {
@@ -302,21 +461,21 @@ module.exports.run = async (bot, message) => {
             });
     }
 
-    function RequirementsCheck(nickName, trovePoints, geodePoints, powerRank) { // Check if applicant meet club requirements
-        let masteryBottom= '';
+    function RequirementsCheck(appReferral, nickName, trovePoints, geodePoints, powerRank) { // Check if applicant meet club requirements
+        let masteryBottom = '';
         let geodeBottom = '';
         let powerrankBottom = '';
 
         if (powerRank >= config.requirements.powerRank) { // Check Power Rank - bottom limit - 30,000 points
             return setTimeout(() => {
-                return Question5(nickName, trovePoints, geodePoints, powerRank);
+                Question5(appReferral, nickName, trovePoints, geodePoints, powerRank);
             }, 1000);
         } else {
             powerrankBottom = 'Your **highest Power Rank** is below our requirements.\n';
 
             if (trovePoints >= config.requirements.trovePoints && geodePoints >= config.requirements.geodePoints) { // Check TROVE mastery points above 69200 points (500 mastery) and GEODE points above 4,100 (50 mastery)
                 return setTimeout(() => {
-                    Question5(nickName, trovePoints, geodePoints, powerRank);
+                    Question5(appReferral, nickName, trovePoints, geodePoints, powerRank);
                 }, 1000);
             } else {
                 if (trovePoints < config.requirements.trovePoints) masteryBottom = '**Trove Mastery Points** are below our requirements.\n';
@@ -330,7 +489,7 @@ module.exports.run = async (bot, message) => {
         }
     }
 
-    function Question5(Answer1, Answer2, Answer3, Answer4) { // Other clubs question
+    function Question5(appReferral, nickName, trovePoints, geodePoints, powerRank) { // Other clubs question
         return message.reply("What other clubs are you associated with? [max 100 characters]\n(or type cancel to stop)")
             .then(Question => {
                 message.channel.awaitMessages(filter, { max: 1, time: 180000 })
@@ -357,9 +516,8 @@ module.exports.run = async (bot, message) => {
                         }
 
                         removeUserLastMessage(message.author); // remove after user typed answer
-                        // let Answer4 = Answer.first().content;
-                        setTimeout(() => {
-                            return Question6(Answer1, Answer2, Answer3, Answer4, Answer.first().content);
+                        return setTimeout(() => {
+                            Question6(appReferral, nickName, trovePoints, geodePoints, powerRank, Answer.first().content);
                         }, 1000);
 
                     }).catch(error => {
@@ -372,7 +530,7 @@ module.exports.run = async (bot, message) => {
             });
     }
 
-    function Question6(Answer1, Answer2, Answer3, Answer4, Answer5) { // Upload character sheet screenshot
+    function Question6(appReferral, nickName, trovePoints, geodePoints, powerRank, otherClubs) { // Upload character sheet screenshot
         return message.reply("Please upload a screenshot of the character sheet now.\nMake sure your file is saved as one of the following extensions: **PNG**, **JPG**, **GIF**, **JPEG**\nExample as shown: https://skillez.eu/images/discord/app.png\n(or type anything to stop)")
             .then(Question => {
                 message.channel.awaitMessages(filter, { max: 1, time: 180000 })
@@ -389,8 +547,8 @@ module.exports.run = async (bot, message) => {
                         const appImageUrl = Answer.first().attachments.array()[0].url;
                         if (appImageUrl.toLocaleLowerCase().endsWith('png') || appImageUrl.toLocaleLowerCase().endsWith('jpg') || appImageUrl.toLocaleLowerCase().endsWith('gif') || appImageUrl.toLocaleLowerCase().endsWith('jpeg')) {
                             const applicantUploadMessage = Answer.first();
-                            setTimeout(() => {
-                                return appPreview(Answer1, Answer2, Answer3, Answer4, Answer5, appImageUrl, applicantUploadMessage);
+                            return setTimeout(() => {
+                                appPreview(appReferral, nickName, trovePoints, geodePoints, powerRank, otherClubs, appImageUrl, applicantUploadMessage);
                             }, 1000);
                         } else {
                             removeUserLastMessage(message.author); // remove after user typed answer
@@ -408,7 +566,7 @@ module.exports.run = async (bot, message) => {
             });
     }
 
-    async function appPreview(Answer1, Answer2, Answer3, Answer4, Answer5, appImageUrl, appImageMessage) { // Application preview
+    async function appPreview(appReferral, nickName, trovePoints, geodePoints, powerRank, otherClubs, appImageUrl, appImageMessage) { // Application preview
         // Create the attachment using MessageAttachment
         const attachment = new Discord.MessageAttachment(appImageUrl);
 
@@ -426,23 +584,24 @@ module.exports.run = async (bot, message) => {
             let embed_application_post_preview = new Discord.MessageEmbed()
                 .setColor('YELLOW')
                 .setAuthor('Application Preview', LaezariaIconURL)
-                .setDescription(`${message.author}, There is your application preview ${Answer1}\n\nMake sure everything is correct and react with ✅ emoji to proceed.\nIf you made a mistake or would like to edit your application, react with ❌ to cancel and try again.`)
+                .setDescription(`${message.author}, There is your application preview ${nickName}\n\nMake sure everything is correct and react with ✅ emoji to proceed.\nIf you made a mistake or would like to edit your application, react with ❌ to cancel and try again.`)
                 .addFields(
-                    { name: 'Trove IGN', value: '► `' + Answer1 + '`', inline: false },
-                    { name: 'List your total mastery points and your class with the highest PR', value: `► Trove Mastery Points: ${Answer2.toLocaleString()}\n► Geode Mastery Points: ${Answer3.toLocaleString()}\n► Highest Power Rank: ${Answer4.toLocaleString()}`, inline: false },
-                    { name: 'Other clubs', value: `► ${Answer5}`, inline: false },
+                    { name: 'Trove IGN', value: '► `' + nickName + '`', inline: false },
+                    { name: 'List your total mastery points and your class with the highest PR', value: `► Trove Mastery Points: ${trovePoints.toLocaleString()}\n► Geode Mastery Points: ${geodePoints.toLocaleString()}\n► Highest Power Rank: ${powerRank.toLocaleString()}`, inline: false },
+                    { name: 'Other clubs', value: `► ${otherClubs}`, inline: false },
+                    { name: 'Referral', value: `► ${appReferral}`, inline: false },
                 )
                 .setThumbnail(appStorageImageURL)
 
             let appImageMessageRemoved = await appImageMessage.delete().catch(() => { return });
             if (appImageMessageRemoved) {
                 return message.channel.send(embed_application_post_preview)
-                    .then((previewMessage) => { previewConfirmation(previewMessage, message.author, Answer1, Answer2, Answer3, Answer4, Answer5, appStorageImageURL, appStorageMessage, appChannel); })
+                    .then((previewMessage) => { previewConfirmation(appReferral, previewMessage, message.author, nickName, trovePoints, geodePoints, powerRank, otherClubs, appStorageImageURL, appStorageMessage, appChannel); })
             }
         }
     }
 
-    async function previewConfirmation(previewMessage, applicationAuthor, Answer1, Answer2, Answer3, Answer4, Answer5, appStorageImageURL, appStorageMessage, appChannel) { // Application preview confirmation (emoji)
+    async function previewConfirmation(appReferral, previewMessage, applicationAuthor, nickName, trovePoints, geodePoints, powerRank, otherClubs, appStorageImageURL, appStorageMessage, appChannel) { // Application preview confirmation (emoji)
 
         try {
             await previewMessage.react('✅');
@@ -466,8 +625,8 @@ module.exports.run = async (bot, message) => {
                 if (reaction.emoji.name === '✅') {
                     return previewMessage.delete().catch(() => { return })
                         .then(() => {
-                            setTimeout(() => {
-                                return postApplication(Answer1, Answer2, Answer3, Answer4, Answer5, appStorageImageURL, appStorageMessage, appChannel);
+                            return setTimeout(() => {
+                                postApplication(appReferral, nickName, trovePoints, geodePoints, powerRank, otherClubs, appStorageImageURL, appStorageMessage, appChannel);
                             }, 1000);
                         })
                 }
@@ -494,16 +653,17 @@ module.exports.run = async (bot, message) => {
             });
     }
 
-    async function postApplication(Answer1, Answer2, Answer3, Answer4, Answer5, appStorageImageURL, appStorageMessage, appChannel) { // Post application
-        let totalMasteryPoints = Math.round(Answer2 + Answer3);
+    async function postApplication(appReferral, nickName, trovePoints, geodePoints, powerRank, otherClubs, appStorageImageURL, appStorageMessage, appChannel) { // Post application
+        let totalMasteryPoints = Math.round(trovePoints + geodePoints);
         // define the embed: send application with provided information
         let embed_application_post = new Discord.MessageEmbed()
             .setColor(embedColors.ClubApplications)
-            .setAuthor(`Laezaria Application: ${Answer1}`, LaezariaIconURL)
+            .setAuthor(`Laezaria Application: ${nickName}`, LaezariaIconURL)
             .addFields(
-                { name: 'Trove IGN', value: '► `' + Answer1 + '`', inline: false },
-                { name: 'List your total mastery points and your class with the highest PR', value: `► Trove Mastery Points: ${Answer2.toLocaleString()}\n► Geode Mastery Points: ${Answer3.toLocaleString()}\n► Total Mastery Points: ${totalMasteryPoints.toLocaleString()}\n► Highest Power Rank: ${Answer4.toLocaleString()}`, inline: false },
-                { name: 'Other clubs', value: `► ${Answer5}`, inline: false },
+                { name: 'Trove IGN', value: '► `' + nickName + '`', inline: false },
+                { name: 'List your total mastery points and your class with the highest PR', value: `► Trove Mastery Points: ${trovePoints.toLocaleString()}\n► Geode Mastery Points: ${geodePoints.toLocaleString()}\n► Total Mastery Points: ${totalMasteryPoints.toLocaleString()}\n► Highest Power Rank: ${powerRank.toLocaleString()}`, inline: false },
+                { name: 'Other clubs', value: `► ${otherClubs}`, inline: false },
+                { name: 'Referral', value: `► ${appReferral}`, inline: false },
                 { name: 'Screenshot:', value: `${appStorageImageURL}`, inline: false },
                 { name: 'Applicant information', value: `Mention: _${message.author}_\nTag: _${message.author.tag}_`, inline: false },
                 { name: 'ID', value: `${message.author.id}`, inline: false },
@@ -520,7 +680,7 @@ module.exports.run = async (bot, message) => {
             });
 
         if (applicationSent) {
-            renameApplicant(message.member, Answer1);
+            renameApplicant(message.member, nickName);
 
             // define the embed: send application with provided information
             let embed_application_post_confirmation = new Discord.MessageEmbed()

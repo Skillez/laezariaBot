@@ -18,6 +18,9 @@ bot.on('guildMemberAdd', async member => {
 
     if (!welcomeChannel) return;
 
+    // Fetch all members from the guild
+    bot.guilds.cache.get(config.LaezariaServerID).members.fetch();
+
     // Reset the canvas
     ctx.clearRect(0, 0, 1550, 400);
 

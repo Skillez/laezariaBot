@@ -27,22 +27,35 @@ bot.on('messageReactionAdd', async (reaction, user) => {
         return reaction.message.fetch()
             .then(async () => {
                 let applicantGuildMember;
-                let applicantUser
+                let applicantUser;
+                let referralUser = '000000000000000000';
+
                 if (!reaction.message.embeds[0]) {
-                    let applicantID = await reaction.message.author.id; // define applicantID from the message author (old application)
+                    let applicantID = reaction.message.author.id; // define applicantID from the message author (old application)
                     applicantGuildMember = reaction.message.guild.member(applicantID);
                     applicantUser = bot.users.cache.get(applicantID);
+                    // console.error('Super-duper old af (2017+) manual application:', applicantID);
+                }
+                else if (reaction.message.embeds[0].fields[6]) { // else if to check newer version of application system 
+                    let applicantID = reaction.message.embeds[0].fields[6].value; // define applicantID from the embed (new application [with referral])
+                    applicantGuildMember = reaction.message.guild.member(applicantID);
+                    applicantUser = bot.users.cache.get(applicantID);
+                    referralUser = reaction.message.embeds[0].fields[3].value.toString().replace(/[\\► <>@#&!]/g, ""); // replace referral mention to an ID
+                    // console.error('Newer application with referral system:', applicantID, referralUser);
                 }
                 else {
-                    let applicantID = await reaction.message.embeds[0].fields[5].value; // define applicantID from the embed (new application)
+                    let applicantID = reaction.message.embeds[0].fields[5].value; // define applicantID from the embed (application [without referral])
                     applicantGuildMember = reaction.message.guild.member(applicantID);
                     applicantUser = bot.users.cache.get(applicantID);
+                    // console.error('Older application without referral system:', applicantID);
                 }
+
                 // console.error(applicantGuildMember);
                 // console.error(applicantUser);
-                // console.log('--------------------------------------------------------------------');
+                // console.error(referralUser);
+                // console.log('-------------------------------------------------------------------------------------------');
 
-                if (ManagerRole || ViceRole || SenpaiRole) {
+                if (ManagerRole || ViceRole || SenpaiRole) { // Manager+ reaction functions
                     if (reaction.emoji.name === 'yeah') {
 
                         let botLogChannel = bot.channels.cache.get(config.BotLog_ChannelID);
@@ -70,22 +83,33 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                     if (reaction.emoji.name === '⚠️') return addUserRole(applicantGuildMember, applicantUser, config.Application_RestrictionRoleID, reaction.emoji.name);
                 }
 
-                if (CaptainRole || EnforcerRole || ManagerRole || ViceRole || SenpaiRole) {
+                if (EnforcerRole || ManagerRole || ViceRole || SenpaiRole) { // Enforcer+ reaction functions
+                    if (reaction.emoji.name === '✅') {
+                        if (user.id === referralUser) {
+                            // console.log(`✅ Referral reaction - correct\nReferral user info: ${referralUser}\n-------------------------------------------------------------------------------------------`);
+                            return addUserRole(applicantGuildMember, applicantUser, config.MemberRoleID, reaction.emoji.name);
+                        } else {
+                            // console.log(`❌ Application message doesn't contain a referral field or ${user.id} is not equal to ${referralUser}.\n-------------------------------------------------------------------------------------------`);
+                            return reaction.users.remove(user.id);
+                        }
+                    }
+                }
+
+                if (CaptainRole || EnforcerRole || ManagerRole || ViceRole || SenpaiRole) { // Captain+ reaction functions
                     if (reaction.emoji.name === '🍏') return;
                     if (reaction.emoji.name === '🍎') return DMnegativeReaction();
                     if (reaction.emoji.name === 'laezaria') return addUserRole(applicantGuildMember, applicantUser, config.MemberRoleID, reaction.emoji.name);
                 }
 
-                if (MemberRole || CaptainRole || EnforcerRole || ManagerRole || ViceRole || SenpaiRole) {
+                if (MemberRole || CaptainRole || EnforcerRole || ManagerRole || ViceRole || SenpaiRole) { // Member+ reaction functions
                     if (reaction.emoji.name === '👍') return;
                     if (reaction.emoji.name === '👎') return DMnegativeReaction();
                 }
-
                 // remove any other undefined reaction
                 return reaction.users.remove(user.id);
 
             }).catch(error => {
-                errorLog(`application-reactions.js:4 messageReactionAdd event\nMaybe missing SEND_MESSAGES or something else.`, error);
+                errorLog(`application-reactions.js:4 messageReactionAdd event\nMaybe missing READ_MESSAGES or something else.`, error);
                 return reaction.users.remove(user.id);
             });
 
@@ -339,7 +363,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
             }
         }
 
-        if (reactionUsed === '⚠️') {
+        else if (reactionUsed === '⚠️') {
             if (applicantGuildMember) {
                 let RestrictionRoleAdded = await applicantGuildMember.roles.add(role2add)
                     .catch(error => errorLog(`application-reactions.js:4 addUserRole()\nError to add a role probably missing MANAGE_ROLES.`, error));
@@ -381,6 +405,50 @@ bot.on('messageReactionAdd', async (reaction, user) => {
             }
         }
 
+        else if (reactionUsed === '✅') {
+            if (applicantGuildMember) {
+                let MemberRoleAdded = await applicantGuildMember.roles.add(role2add)
+                    .catch(error => errorLog(`application-reactions.js:6 addUserRole()\nError to add a role probably missing MANAGE_ROLES.`, error));
 
+                if (MemberRoleAdded) {
+                    // define the embed: confirmation log
+                    let member_role_log_confirmation = new Discord.MessageEmbed()
+                        .setColor(embedColors.AppReaction)
+                        .setAuthor(`Referral added ${role2add.name} with a reaction`, LaezariaIconURL)
+                        .setDescription(`[**Jump to application message**](${reaction.message.url})`)
+                        .addFields(
+                            { name: `${reaction.emoji} Used by`, value: ReactAuthor, inline: true },
+                            { name: `Channel`, value: reaction.message.channel, inline: true },
+                            { name: 'Role Receiver Information', value: `${applicantGuildMember}\n${applicantGuildMember.displayName}\n${applicantGuildMember.user.tag}\nID: ${applicantGuildMember.id}`, inline: false })
+                        .setFooter(`LOG:ID ApplicationReactionJS_12`)
+                        .setThumbnail(LaezariaIconURL)
+                        .setTimestamp()
+                    return sendEmbedLog(member_role_log_confirmation, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
+                }
+            } else { // if applicantGuildMember is not found
+                return ReactAuthor.send(`❌ There is an error with your recent activity!\n\nI couldn't add **${role2add.name}** role to ${applicantUser.tag} and you have do that manually if possible.\nPlease, check out the <#${config.BotLog_ChannelID}> for more information!`)
+                    .catch(error => errorLog(`application-reactions.js:7 addUserRole()\nI cannot send the message to the ReactAuthor.`, error))
+                    .then(() => {
+
+                        // define the embed: error to add a member role
+                        let member_role_error_log = new Discord.MessageEmbed()
+                            .setColor(`RED`)
+                            .setAuthor(`Referral add ${role2add.name} - ERROR`, LaezariaIconURL)
+                            .setDescription(`**Receiver is not found as a member of ${reaction.message.guild.name}**\n[**Jump to application message**](${reaction.message.url})`)
+                            .addFields(
+                                { name: `${reaction.emoji} Used by`, value: ReactAuthor, inline: true },
+                                { name: `Channel`, value: reaction.message.channel, inline: true },
+                                { name: 'Receiver Information', value: `${applicantUser}\n${applicantUser.tag}\nID: ${applicantUser.id}`, inline: false })
+                            .setFooter(`LOG:ID ApplicationReactionJS_13`)
+                            .setThumbnail(LaezariaIconURL)
+                            .setTimestamp()
+                        return sendEmbedLog(member_role_error_log, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
+                    });
+            }
+        }
+        else {
+            reaction.users.remove(user.id);
+            return errorLog(`application-reactions.js:8 addUserRole()\nUndefined reaction (${reactionUsed}) inside this function.`);
+        }
     }
 });
