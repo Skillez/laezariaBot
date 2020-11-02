@@ -195,7 +195,7 @@ module.exports.run = async (bot, message) => {
                         // let nickName = Answer.first().content;
                         return setTimeout(() => {
                             // return Question2(Answer.first().content);
-                            refferalQuestion1(Answer.first().content, message.author);
+                            referralQuestion1(Answer.first().content, message.author);
                         }, 1000);
 
                     }).catch(error => {
@@ -208,7 +208,7 @@ module.exports.run = async (bot, message) => {
             });
     }
 
-    function refferalQuestion1(nickName, applicationAuthor) {
+    function referralQuestion1(nickName, applicationAuthor) {
         return message.reply(`Have you been referred by our staff(enforcer+)?`)
             .then(async Question => {
                 try {
@@ -217,7 +217,7 @@ module.exports.run = async (bot, message) => {
                 } catch (error) {
                     message.channel.send(`An unknown error occured ;(`)
                         .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
-                    errorLog(`apply.js:1 refferalQuestion1()\nError to add reactions probably wrong emojis.`, error)
+                    errorLog(`apply.js:1 referralQuestion1()\nError to add reactions probably wrong emojis.`, error)
                 }
 
                 const emojiFilter = (reaction, user) => {
@@ -233,7 +233,7 @@ module.exports.run = async (bot, message) => {
                                 .then(() => {
                                     return setTimeout(() => {
                                         // console.log(`${applicationAuthor.tag} reacted with ✅`);
-                                        refferalQuestion2(nickName);
+                                        referralQuestion2(nickName);
                                     }, 1000);
                                 })
                         }
@@ -261,8 +261,8 @@ module.exports.run = async (bot, message) => {
             });
     }
 
-    function refferalQuestion2(nickName) {
-        return message.reply(`please mention enforcer+ that reffered you.\n(or type cancel to stop)`)
+    function referralQuestion2(nickName) {
+        return message.reply(`Please mention enforcer+ that referred you.\n(or type cancel to stop)`)
             .then(Question => {
                 message.channel.awaitMessages(filter, { max: 1, time: 180000 })
                     .then(Answer => {
@@ -287,8 +287,7 @@ module.exports.run = async (bot, message) => {
                                     || referralGuildMember.roles.cache.some(role => role.id === config.EnforcerRoleID)) {
                                     removeUserLastMessage(message.author); // remove after user typed answer
                                     return setTimeout(() => {
-                                        console.log(`refferalQuestion2 finished`);
-                                        console.error(`Referred: ${referralGuildMember.user.tag} and has Senpai/Vice/Manager or Enforcer role.`);
+                                        // console.log(`referralQuestion2 finished\nReferred: ${referralGuildMember.user.tag} and has Senpai/Vice/Manager or Enforcer role.`);
                                         Question2(referralGuildMember.user, nickName);
                                     }, 1000);
                                 } else {
@@ -305,7 +304,7 @@ module.exports.run = async (bot, message) => {
                             removeUserLastMessage(message.author); // remove after user typed answer
                             return message.channel.send(`${message.author} ❌ The application has been cancelled - You didn't mention referral.`)
                                 .then(message => message.delete({ timeout: 5000 })).catch(() => { return }) // remove bot exit request message.
-                            // .then(refferalQuestion2(nickName));
+                            // .then(referralQuestion2(nickName));
                         }
 
                     }).catch(error => {

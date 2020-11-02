@@ -59,7 +59,10 @@ bot.on('ready', async () => {
     const patchNotesChannel = guild.channels.cache.get(config.CaptainChannelID);
     if (patchNotesChannel) {
         const patchNotes = fs.readFileSync("./README.md", "utf8");
-        patchNotesChannel.send(patchNotes)
+
+        // Do not post patch notes if READ.md has 'botIgnore' at the end
+        if (patchNotes.split(" ").slice(-1)[0] === 'botIgnore') return;
+        else patchNotesChannel.send(patchNotes)
             .catch(error => errorLog('ready-event.js:3 ready Event()\nError to post patch notes.', error));
     }
 
