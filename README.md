@@ -1,5 +1,7 @@
-# Laezaria Discord Bot **v1.5da** Update!
+# Laezaria Discord Bot **v1.5e** Update!
 
 > Application System (update)
-+ Fixed some typos. 
-+ Disabled unnecessary console logs.
++ Changed power rank requirement from 32,000 to 30,000
+
+> Minor changes
++ Fixed rate-limits.js description

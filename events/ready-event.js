@@ -25,12 +25,18 @@ bot.on('ready', async () => {
             console.info(`\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\nSkillez Bot (${bot.user.tag}) has logged in!\nServes ${totalUsers} people in ${guild.name}\nVersion: ${BotVersion}\n▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬`);
 
             // Set the client user's presence
-            bot.user.setPresence({ activity: { name: 'with Laezaria', type: 'PLAYING' }, status: 'idle' })
-                .then(() => {
-                    setInterval(() => {
-                        bot.user.setPresence({ activity: { name: `${guild.memberCount} Laezarians 👀`, type: 'WATCHING' }, status: 'online' })
-                    }, 3600000);
-                }).catch(error => errorLog(`ready-event.js:1 ready Event()\nError to set bot activity.`, error));
+            if (guild) {
+                bot.user.setPresence({ activity: { name: 'with Laezaria', type: 'PLAYING' }, status: 'idle' }).catch(error => errorLog(`ready-event.js:1 ready Event()\nError to set the bot activity.`, error))
+                    .then(() => {
+                        setInterval(() => { // update status every hour
+                            bot.user.setPresence({ activity: { name: `${guild.memberCount} Laezarians 👀`, type: 'WATCHING' }, status: 'online' }).catch(error => errorLog(`ready-event.js:2 ready Event()\nError to set the bot activity.`, error));
+                        }, 3600000);
+                    })
+            } else {
+                // Set the bot user's presence 
+                bot.user.setPresence({ activity: { name: 'error to load guild', type: 'WATCHING' }, status: 'idle' })
+                    .catch(error => errorLog(`ready-event.js:3 ready Event()\nError to set the bot activity.`, error));
+            }
 
             const Owner = bot.users.cache.get(config.BotOwnerID);
             //define the embed: bot is ready to work
@@ -52,7 +58,7 @@ bot.on('ready', async () => {
                 .setFooter('Bot is ready to work')
                 .setTimestamp()
             await sendEmbedLog(embed_bot_logged, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
-        }).catch(error => errorLog(`ready-event.js:2 ready Event()\nError to fetch guild members i guess.`, error));
+        }).catch(error => errorLog(`ready-event.js:4 ready Event()\nError to fetch guild members i guess.`, error));
 
 
     // Post patch notes on captain channel.
@@ -63,7 +69,7 @@ bot.on('ready', async () => {
         // Do not post patch notes if READ.md has 'botIgnore' at the end
         if (patchNotes.split(" ").slice(-1)[0] === 'botIgnore') return;
         else patchNotesChannel.send(patchNotes)
-            .catch(error => errorLog('ready-event.js:3 ready Event()\nError to post patch notes.', error));
+            .catch(error => errorLog('ready-event.js:5 ready Event()\nError to post patch notes.', error));
     }
 
 });
