@@ -5,7 +5,7 @@ module.exports.help = {
     name: "vote",
     description: "Starts a simple yea/nah/dont know vote.",
     type: "captain",
-    usage: `ℹ️ Format: **${config.BotPrefix}vote your question**\n\nℹ️ Example: ${config.BotPrefix}vote LaezBot is the best?`
+    usage: `ℹ️ Format: **${config.botPrefix}vote your question**\n\nℹ️ Example: ${config.botPrefix}vote LaezBot is the best?`
 };
 
 module.exports.run = async (bot, message, args) => {
@@ -15,7 +15,7 @@ module.exports.run = async (bot, message, args) => {
     //////////////////////////////////////////////////////////////////////////////////////////////
 
     if (args[0]) return StartVoteMessage(args);
-    else return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+    else return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
         .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
     //////////////////////////////////////////////////////////////////////////////////////////////

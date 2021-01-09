@@ -4,7 +4,7 @@ module.exports.help = {
     name: "dice",
     description: "Rolls the dice.",
     type: "public",
-    usage: `ℹ️ Format: **${config.BotPrefix}dice sides**\n\nℹ️ Example: ${config.BotPrefix}dice 20`
+    usage: `ℹ️ Format: **${config.botPrefix}dice sides**\n\nℹ️ Example: ${config.botPrefix}dice 20`
 };
 
 module.exports.run = async (bot, message, args) => {
@@ -24,7 +24,7 @@ module.exports.run = async (bot, message, args) => {
         message.channel.send(`${message.author} rolled the dice (**D${args[0]}**).\nLanded on ${Number2Emoji(DiceResult)}`)
             // .then(message => { message.delete({ timeout: 30000 }).catch(() => { return; }) }); // remove bot dice result message
 
-    } else return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+    } else return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
         .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
     /////////////////////////////////////////////////////////////////////////////////////////

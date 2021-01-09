@@ -5,7 +5,7 @@ module.exports.help = {
     name: "help",
     description: "List all of commands.",
     type: "public",
-    usage: `ℹ️ Format: **${config.BotPrefix}help commandName**\n\nℹ️ Examples:\n${config.BotPrefix}help\n${config.BotPrefix}help apply`
+    usage: `ℹ️ Format: **${config.botPrefix}help commandName**\n\nℹ️ Examples:\n${config.botPrefix}help\n${config.botPrefix}help apply`
 };
 
 module.exports.run = async (bot, message, args) => {
@@ -16,7 +16,7 @@ module.exports.run = async (bot, message, args) => {
 
     if (args) {
         if (getCommand(args[0])) {
-            return message.channel.send(`Help for the **${config.BotPrefix}${args[0]}** command:\nAccess Level: __${getCommand(args[0]).help.type.toUpperCase()}__\nDescription: ${getCommand(args[0]).help.description}\n\nUsage:\n${getCommand(args[0]).help.usage}`)
+            return message.channel.send(`Help for the **${config.botPrefix}${args[0]}** command:\nAccess Level: __${getCommand(args[0]).help.type.toUpperCase()}__\nDescription: ${getCommand(args[0]).help.description}\n\nUsage:\n${getCommand(args[0]).help.usage}`)
                 .then(helpMessage => messageRemoverWithReact(helpMessage, message.author))
                 .catch(() => { return });
         }
@@ -40,8 +40,8 @@ module.exports.run = async (bot, message, args) => {
         // define the embed: bot commands page (with disabled commands)
         const embed_botcommands = new Discord.MessageEmbed()
             .setColor(roleColor)
-            .setAuthor(`${bot.user.username} Help - Bot prefix: ${config.BotPrefix}`, LaezariaIconURL)
-            .setDescription(`Type **${config.BotPrefix}help commandName**\nto see description, usage and examples!`)
+            .setAuthor(`${bot.user.username} Help - Bot prefix: ${config.botPrefix}`, LaezariaIconURL)
+            .setDescription(`Type **${config.botPrefix}help commandName**\nto see description, usage and examples!`)
             .addFields(
                 { name: '‏‏‎ ‎\n🚙 Owner commands:', value: ownerCommands, inline: false },
                 { name: '‏‏‎ ‎\n🚗 Manager commands:', value: managerCommands, inline: false },
@@ -59,8 +59,8 @@ module.exports.run = async (bot, message, args) => {
         // define the embed: bot commands page (without disabled commands)
         const embed_botcommands = new Discord.MessageEmbed()
             .setColor(roleColor)
-            .setAuthor(`${bot.user.username} Help - Bot prefix: ${config.BotPrefix}`, LaezariaIconURL)
-            .setDescription(`Type **${config.BotPrefix}help commandName**\nto see description, usage and examples!`)
+            .setAuthor(`${bot.user.username} Help - Bot prefix: ${config.botPrefix}`, LaezariaIconURL)
+            .setDescription(`Type **${config.botPrefix}help commandName**\nto see description, usage and examples!`)
             .addFields(
                 { name: '‏‏‎ ‎\n🚙 Owner commands:', value: ownerCommands, inline: false },
                 { name: '‏‏‎ ‎\n🚗 Manager commands:', value: managerCommands, inline: false },

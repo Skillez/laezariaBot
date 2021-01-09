@@ -15,8 +15,8 @@ bot.on('ready', () => {
     cron.schedule('0 21 * * *', () => { //  At 9pm daily.
         // const lastUpdate = new Date(Date.now()).toUTCString();
         console.log('leaderboard-backup.js: Laezaria Points backup:', currentUTCDate());
-        leaderboardSpreadsheetUpdate(config.Leaderboard_SpreadsheetID, config.Leaderboard_Spreadsheet_Sheet_CurrentID, 'points_current');
-        leaderboardSpreadsheetUpdate(config.Leaderboard_SpreadsheetID, config.Leaderboard_Spreadsheet_Sheet_OverallID, 'points_overall');
+        leaderboardSpreadsheetUpdate(config.leaderboard.spreadsheetID, config.leaderboard.spreadsheet_sheet_CurrentID, 'points_current');
+        leaderboardSpreadsheetUpdate(config.leaderboard.spreadsheetID, config.leaderboard.spreadsheet_sheet_OverallID, 'points_overall');
         leaderboardFileBackup();
     });
 

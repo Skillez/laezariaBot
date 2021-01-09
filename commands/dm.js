@@ -5,7 +5,7 @@ module.exports.help = {
     name: "dm",
     description: "Sends a direct message through the bot.",
     type: "captain",
-    usage: `ℹ️ Format: **${config.BotPrefix}dm userID/mention messageToSend**\n\nℹ️ Examples:\n${config.BotPrefix}dm ${config.BotOwnerID} Hello 👋\n${config.BotPrefix}dm @mention Hello 👋`
+    usage: `ℹ️ Format: **${config.botPrefix}dm userID/mention messageToSend**\n\nℹ️ Examples:\n${config.botPrefix}dm ${config.botOwnerID} Hello 👋\n${config.botPrefix}dm @mention Hello 👋`
 };
 
 module.exports.run = async (bot, message, args) => {
@@ -21,9 +21,9 @@ module.exports.run = async (bot, message, args) => {
 
         if (user2dm && message2dm) {
             return SendTheDirectMessage(user2dm, message2dm);
-        } else return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+        } else return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
             .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
-    } return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+    } return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
         .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ module.exports.run = async (bot, message, args) => {
         mention.send(A2).then(() => { // SEND THE MESSAGE TO THE USER
             message.channel.send(`✅ Done!\nDirect message sent to **${mention.user.tag}**`)
                 .then(message => {
-                    sendEmbedLog(embed_dm_success_log, config.BotLog_DirectMessageChannelID, 'Laezaria Bot - Direct Messages');
+                    sendEmbedLog(embed_dm_success_log, config.botlogs.directMessageChannelID, 'Laezaria Bot - Direct Messages');
                     message.delete({ timeout: 5000 }).catch(() => { return })
                 });
         }).catch(error => { // IF MESSAGE CANNOT BE DELIEVERED

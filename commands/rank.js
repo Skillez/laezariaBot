@@ -6,7 +6,7 @@ module.exports.help = {
     name: "rank",
     description: "Checks your or others current ranking and points.",
     type: "public",
-    usage: `ℹ️ Format: **${config.BotPrefix}rank @mention/userID(optional)**\n\nℹ️ Examples:\n${config.BotPrefix}rank - for own ranking\n${config.BotPrefix}rank @Skillez\n${config.BotPrefix}rank ${config.BotOwnerID}`
+    usage: `ℹ️ Format: **${config.botPrefix}rank @mention/userID(optional)**\n\nℹ️ Examples:\n${config.botPrefix}rank - for own ranking\n${config.botPrefix}rank @Skillez\n${config.botPrefix}rank ${config.botOwnerID}`
 };
 
 module.exports.run = async (bot, message, args) => {
@@ -29,7 +29,7 @@ module.exports.run = async (bot, message, args) => {
     }
 
     // If command format is wrong
-    return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+    return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
         .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
     /////////////////////////////////////////////////////////////////////////////////////////

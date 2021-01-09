@@ -7,9 +7,9 @@ bot.on('ready', async () => {
     // Update Leaderboard Message - https://crontab.guru/examples.html
     cron.schedule('0 13 * * *', () => { // At 1pm daily.
         console.log('leaderboard-roles.js: Leaderboard roles update:', currentUTCDate());
-        top1LeaderboardDonatorRole('points_overall', config.Leaderboard_Role_Top1OverallID);
-        top1LeaderboardDonatorRole('points_current', config.Leaderboard_Role_Top1CurrentID);
-        top10LeaderboardDonatorRole('points_current', config.Leaderboard_Role_Top10CurrentID);
+        top1LeaderboardDonatorRole('points_overall', config.leaderboard.top1_OverallLB_RoleID);
+        top1LeaderboardDonatorRole('points_current', config.leaderboard.top1_CurrentLB_RoleID);
+        top10LeaderboardDonatorRole('points_current', config.leaderboard.top10_CurrentLB_RoleID);
     });
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -56,12 +56,12 @@ bot.on('ready', async () => {
         }
 
         // Define top1role
-        const top1role = bot.guilds.cache.get(config.LaezariaServerID).roles.cache.get(roleID);
+        const top1role = bot.guilds.cache.get(config.laezariaServerID).roles.cache.get(roleID);
         if (!top1role) return errorLog('leaderboard-roles.js:2 top1LeaderboardDonatorRole()\ntop1role is undefined, probably wrong ID or role has been removed from the server!');
 
         // If there is at least one person in leaderboardObject database
         if (leaderboardObject[0]) {
-            const top1user = bot.guilds.cache.get(config.LaezariaServerID).members.cache.get(leaderboardObject[0].id);
+            const top1user = bot.guilds.cache.get(config.laezariaServerID).members.cache.get(leaderboardObject[0].id);
 
             // Remove roles from the wrong people
             top1role.members.forEach(async roleMember => {
@@ -98,7 +98,7 @@ bot.on('ready', async () => {
             return errorLog(`leaderboard-roles.js:1 top10LeaderboardDonatorRole()\nError to LOAD/PARSE ${leaderboardFile}.json.`);
         }
 
-        const top10role = bot.guilds.cache.get(config.LaezariaServerID).roles.cache.get(roleID);
+        const top10role = bot.guilds.cache.get(config.laezariaServerID).roles.cache.get(roleID);
         // If top10role is missing
         if (!top10role) return errorLog(`leaderboard-roles.js:2 top10LeaderboardDonatorRole()\ntop10role is undefined, probably wrong ID or role has been removed from the server!`);
 
@@ -109,7 +109,7 @@ bot.on('ready', async () => {
             const top10Array = [];
             for (let index = 1; index <= 9; index++) {
                 if (leaderboardObject[index]) {
-                    const element = bot.guilds.cache.get(config.LaezariaServerID).members.cache.get(leaderboardObject[index].id);
+                    const element = bot.guilds.cache.get(config.laezariaServerID).members.cache.get(leaderboardObject[index].id);
                     if (element) {
                         // console.log(element);
                         top10Array.push(element);

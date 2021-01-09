@@ -6,7 +6,7 @@ module.exports.help = {
     name: "points",
     description: "Manages user Laezaria Points.",
     type: "manager",
-    usage: `ℹ️ Format: **${config.BotPrefix}points add/del @mention/userID amount note(optional)**\n\nℹ️ Examples:\n${config.BotPrefix}points add @Skillez 100 Event prize\n${config.BotPrefix}points del ${config.BotOwnerID} 100`
+    usage: `ℹ️ Format: **${config.botPrefix}points add/del @mention/userID amount note(optional)**\n\nℹ️ Examples:\n${config.botPrefix}points add @Skillez 100 Event prize\n${config.botPrefix}points del ${config.botOwnerID} 100`
 };
 
 module.exports.run = async (bot, message, args) => {
@@ -33,14 +33,14 @@ module.exports.run = async (bot, message, args) => {
             case "del": return delPoints(mentionedUser, parseInt(args[2]), args.slice(3).join(" "))
                 .then(pointsStatus => { message.channel.send(embedMessage(pointsStatus, message.author)).then(message => message.delete({ timeout: 10000 })).catch(() => { return }); });
 
-            default: return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+            default: return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
                 .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
         }
     }
 
     // If wrong command format
-    return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+    return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
         .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -64,13 +64,13 @@ module.exports.run = async (bot, message, args) => {
         if (pointsAddedCurrent === true && pointsAddedOverall === true) {
             // System Log
             // console.log(`-----------------------------------------\nLaezaria Points System Log (${user.tag})\ncurrentLB add ${amount} points: ${pointsAddedCurrent}\noverallLB add ${amount} points: ${pointsAddedOverall}\nUser information: ${user.id}\n-----------------------------------------`);
-            sendEmbedLog(embedMessageLog(`${message.author} added +${amount.toLocaleString()} points!\n\ncurrent season file: ✅\noverall points file: ✅\n\nNote: ${noteString}`, user), config.BotLog_ChannelID, 'Laezaria Bot Points - Logs');
+            sendEmbedLog(embedMessageLog(`${message.author} added +${amount.toLocaleString()} points!\n\ncurrent season file: ✅\noverall points file: ✅\n\nNote: ${noteString}`, user), config.botlogs.channelID, 'Laezaria Bot Points - Logs');
             return `📥 You have added **+${amount.toLocaleString()}** points to ${user}!`;
         }
         else if (pointsAddedCurrent === true && pointsAddedOverall != true) {
             // System Log
             // console.log(`-----------------------------------------\nLaezaria Points System Log (${user.tag})\ncurrentLB add ${amount} points: ${pointsAddedCurrent}\noverallLB add ${amount} points: ${pointsAddedOverall}\nUser information: ${user.id}\n-----------------------------------------`);
-            sendEmbedLog(embedMessageLog(`${message.author} added +${amount.toLocaleString()} points!\n\ncurrent season file: ✅\noverall points file: ${pointsAddedOverall}\n\nNote: ${noteString}`, user), config.BotLog_ChannelID, 'Laezaria Bot Points - Logs');
+            sendEmbedLog(embedMessageLog(`${message.author} added +${amount.toLocaleString()} points!\n\ncurrent season file: ✅\noverall points file: ${pointsAddedOverall}\n\nNote: ${noteString}`, user), config.botlogs.channelID, 'Laezaria Bot Points - Logs');
             return `📥 You have added **+${amount.toLocaleString()}** points to ${user}!`;
         }
         else return pointsAddedCurrent;
@@ -127,13 +127,13 @@ module.exports.run = async (bot, message, args) => {
         if (pointsRemovedResultCurrent === true && pointsRemovedResultOverall === true) {
             // System Log
             // console.log(`-----------------------------------------\nLaezaria Points System Log (${user.tag})\ncurrentLB removed ${amount} points: ${pointsRemovedResultCurrent}\noverallLB removed ${amount} points: ${pointsRemovedResultOverall}\nUser information: ${user.id}\n-----------------------------------------`);
-            sendEmbedLog(embedMessageLog(`${message.author} removed -${amount.toLocaleString()} points!\n\ncurrent season file: ✅\noverall points file: ✅\n\nNote: ${noteString}`, user), config.BotLog_ChannelID, 'Laezaria Bot Points - Logs');
+            sendEmbedLog(embedMessageLog(`${message.author} removed -${amount.toLocaleString()} points!\n\ncurrent season file: ✅\noverall points file: ✅\n\nNote: ${noteString}`, user), config.botlogs.channelID, 'Laezaria Bot Points - Logs');
             return `📤 You have removed **-${amount.toLocaleString()}** points from ${user}!`;
         }
         else if (pointsRemovedResultCurrent === true && pointsRemovedResultOverall != true) {
             // System Log
             // console.log(`-----------------------------------------\nLaezaria Points System Log (${user.tag})\ncurrentLB removed ${amount} points: ${pointsRemovedResultCurrent}\noverallLB removed ${amount} points: ${pointsRemovedResultOverall}\nUser information: ${user.id}\n-----------------------------------------`);
-            sendEmbedLog(embedMessageLog(`${message.author} removed -${amount.toLocaleString()} points!\n\ncurrent season file: ✅\noverall points file: ${pointsRemovedResultOverall}\n\nNote: ${noteString}`, user), config.BotLog_ChannelID, 'Laezaria Bot Points - Logs');
+            sendEmbedLog(embedMessageLog(`${message.author} removed -${amount.toLocaleString()} points!\n\ncurrent season file: ✅\noverall points file: ${pointsRemovedResultOverall}\n\nNote: ${noteString}`, user), config.botlogs.channelID, 'Laezaria Bot Points - Logs');
             return `📤 You have removed **-${amount.toLocaleString()}** points from ${user}!`;
         }
         else return pointsRemovedResultCurrent;

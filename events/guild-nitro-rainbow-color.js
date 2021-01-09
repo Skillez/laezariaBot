@@ -19,7 +19,7 @@ bot.on('ready', () => {
             'E5C7CE', '2DFAB4', '5639CC', '2C69E5', '54A1E9'];
         const randomColor = ColorsArray[Math.floor(Math.random() * ColorsArray.length)];
 
-        const role = bot.guilds.cache.get(config.LaezariaServerID).roles.cache.get(config.NitroRoleID);
+        const role = bot.guilds.cache.get(config.laezariaServerID).roles.cache.get(config.roles.nitroRoleID);
         if (!role) return errorLog(`guild-nitro-rainbow-color.js:1 changeRoleColor()\nrole is undefined.`);
 
         role.edit({ color: randomColor })

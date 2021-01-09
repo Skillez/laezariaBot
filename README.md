@@ -1,7 +1,11 @@
-# Laezaria Discord Bot **v1.5e** Update!
+# Laezaria Discord Bot **v1.6** Update!
 
 > Application System (update)
-+ Changed power rank requirement from 32,000 to 30,000
++ !apply v2 - should be more user friendly now
+
+> New commands
++ !poll - allow to create polls tho
 
 > Minor changes
-+ Fixed rate-limits.js description
++ cleared configuration file
++ improved some functions

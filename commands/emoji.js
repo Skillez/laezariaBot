@@ -10,18 +10,18 @@ module.exports.help = {
 
 module.exports.run = async (bot, message) => {
 
-    if (message.channel.id != config.EmojiRequest_ChannelID) {
-        return message.reply(`You can only request on the <#${config.EmojiRequest_ChannelID}> channel!`)
+    if (message.channel.id != config.other.emojiRequestChannelID) {
+        return message.reply(`You can only request on the <#${config.other.emojiRequestChannelID}> channel!`)
             .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
     }
 
-    if (message.member.roles.cache.some(role => role.id === config.GuestRoleID))
-        return message.reply(`Guests cannot request emojis!\nCheck out the <#${config.InformationChannelID}> to learn more.`)
+    if (message.member.roles.cache.some(role => role.id === config.roles.guestRoleID))
+        return message.reply(`Guests cannot request emojis!\nCheck out the <#${config.channels.informationChannelID}> to learn more.`)
             .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    const emojiRequestChannel = message.guild.channels.cache.find(ch => ch.id === config.EmojiRequest_ChannelID);
+    const emojiRequestChannel = message.guild.channels.cache.find(ch => ch.id === config.other.emojiRequestChannelID);
 
     if (emojiRequestChannel) {
         const emojiRequestChannelReadMessagesCheck = await emojiRequestChannel.messages.fetch({ limit: 1 }).catch(() => { return });
@@ -47,7 +47,7 @@ module.exports.run = async (bot, message) => {
             message.channel.awaitMessages(filter, { max: 1, time: 60000 })
                 .then(RequestTypeAnswer => {
                     RequestTypeQuestion.delete().catch(() => { return }); // remove bot request type after answer
-                    if (RequestTypeAnswer.first().content.startsWith(config.BotPrefix)) return; // stop the request if other command was typed
+                    if (RequestTypeAnswer.first().content.startsWith(config.botPrefix)) return; // stop the request if other command was typed
 
                     if (RequestTypeAnswer.first().content.toLowerCase() === 'add' || RequestTypeAnswer.first().content.toLowerCase() === '1') {
                         removeUserLastMessage(message.author); // remove after user typed add
@@ -84,7 +84,7 @@ module.exports.run = async (bot, message) => {
                 message.channel.awaitMessages(filter, { max: 1, time: 60000 })
                     .then(Answer => {
                         Question.delete().catch(() => { return }); // remove bot question after answer is sent
-                        if (Answer.first().content.startsWith(config.BotPrefix)) return; // stop emoji request if other command was typed
+                        if (Answer.first().content.startsWith(config.botPrefix)) return; // stop emoji request if other command was typed
 
                         else if (Answer.first().content.toLowerCase() === 'exit' || Answer.first().content.toLowerCase() === 'cancel') { // if user want to stop
                             removeUserLastMessage(message.author);
@@ -138,7 +138,7 @@ module.exports.run = async (bot, message) => {
                 message.channel.awaitMessages(filter, { max: 1, time: 60000 })
                     .then(Answer => {
                         Question.delete().catch(() => { return }); // remove bot question after answer is sent
-                        if (Answer.first().content.startsWith(config.BotPrefix)) return; // stop the request if other command was typed
+                        if (Answer.first().content.startsWith(config.botPrefix)) return; // stop the request if other command was typed
 
                         else if (Answer.first().content.toLowerCase() === 'exit' || Answer.first().content.toLowerCase() === 'cancel') { // if user want to stop
                             removeUserLastMessage(message.author); // remove after user typed answer
@@ -191,7 +191,7 @@ module.exports.run = async (bot, message) => {
                 message.channel.awaitMessages(filter, { max: 1, time: 60000 })
                     .then(Answer => {
                         Question.delete().catch(() => { return }); // remove bot question after answer is sent
-                        if (Answer.first().content.startsWith(config.BotPrefix)) return; // stop emoji request if other command was typed
+                        if (Answer.first().content.startsWith(config.botPrefix)) return; // stop emoji request if other command was typed
 
                         else if (Answer.first().content.toLowerCase() === 'exit' || Answer.first().content.toLowerCase() === 'cancel') { // if user want to stop
                             removeUserLastMessage(message.author);

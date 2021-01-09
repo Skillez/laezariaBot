@@ -11,7 +11,7 @@ const ctx = canvas.getContext('2d');
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 bot.on('guildMemberAdd', async member => {
-    const welcomeChannel = member.guild.channels.cache.find(ch => ch.id === config.WelcomeChannelID);
+    const welcomeChannel = member.guild.channels.cache.find(ch => ch.id === config.channels.welcomeChannelID);
     let welcomeEmojiReact = member.guild.emojis.cache.find(emoji => emoji.name === 'pikawave');
     let welcomeEmojiEnjoy = member.guild.emojis.cache.find(emoji => emoji.name === 'pepegaShake');
     let welcomeEmojiLaezaria = member.guild.emojis.cache.find(emoji => emoji.name === 'laezaria');
@@ -19,7 +19,7 @@ bot.on('guildMemberAdd', async member => {
     if (!welcomeChannel) return;
 
     // Fetch all members from the guild
-    bot.guilds.cache.get(config.LaezariaServerID).members.fetch();
+    bot.guilds.cache.get(config.laezariaServerID).members.fetch();
 
     // Reset the canvas
     ctx.clearRect(0, 0, 1550, 400);
@@ -104,7 +104,7 @@ bot.on('guildMemberAdd', async member => {
     if (!welcomeEmojiEnjoy) welcomeEmojiEnjoy = '';
 
     const attachment = new Discord.MessageAttachment(canvas.toBuffer(), 'laezaria-welcome.png');
-    await welcomeChannel.send(`${member} - Welcome to **Laezaria** ${welcomeEmojiLaezaria}! Check out the <#${config.InformationChannelID}> channel. Enjoy your stay ${welcomeEmojiEnjoy}`, attachment)
+    await welcomeChannel.send(`${member} - Welcome to **Laezaria** ${welcomeEmojiLaezaria}! Check out the <#${config.channels.informationChannelID}> channel. Enjoy your stay ${welcomeEmojiEnjoy}`, attachment)
         .then(message => message.react(welcomeEmojiReact).catch(() => { return }))
         .catch((() => { return }));
 

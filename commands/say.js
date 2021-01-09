@@ -5,7 +5,7 @@ module.exports.help = {
     name: "say",
     description: "Sends a message as the bot.",
     type: "captain",
-    usage: `ℹ️ Format: **${config.BotPrefix}say #channel(optional) embed(optional) messageToSend**\n\nℹ️ Examples:\n${config.BotPrefix}say Hello 👋\n${config.BotPrefix}say embed Hello 👋\n${config.BotPrefix}say <#${config.WelcomeChannelID}> Hello 👋\n${config.BotPrefix}say <#${config.WelcomeChannelID}> embed Hello 👋`
+    usage: `ℹ️ Format: **${config.botPrefix}say #channel(optional) embed(optional) messageToSend**\n\nℹ️ Examples:\n${config.botPrefix}say Hello 👋\n${config.botPrefix}say embed Hello 👋\n${config.botPrefix}say <#${config.channels.welcomeChannelID}> Hello 👋\n${config.botPrefix}say <#${config.channels.welcomeChannelID}> embed Hello 👋`
 };
 
 module.exports.run = async (bot, message, args) => {
@@ -15,7 +15,7 @@ module.exports.run = async (bot, message, args) => {
     //////////////////////////////////////////////////////////////////////////////////////////////
 
     if (args[0]) return BotSayTheMessage(args[0], args[1], args[2]); // Run function to send the message as a bot user
-    else return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+    else return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
         .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
     //////////////////////////////////////////////////////////////////////////////////////////////

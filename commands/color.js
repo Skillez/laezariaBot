@@ -5,7 +5,7 @@ module.exports.help = {
     name: "color",
     description: "Shows embed with provided hexCode color.",
     type: "public",
-    usage: `ℹ️ Format: **${config.BotPrefix}color #hexCode**\nColor Picker: <https://htmlcolorcodes.com/color-picker>\n\nℹ️ Example: ${config.BotPrefix}color #0095ff`
+    usage: `ℹ️ Format: **${config.botPrefix}color #hexCode**\nColor Picker: <https://htmlcolorcodes.com/color-picker>\n\nℹ️ Example: ${config.botPrefix}color #0095ff`
 };
 
 module.exports.run = async (bot, message, args) => {
@@ -14,7 +14,7 @@ module.exports.run = async (bot, message, args) => {
     //                                           color                                          //
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    if (!args[0]) return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+    if (!args[0]) return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
         .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
     let argHex = args[0].toString().replace(/[#]/g, ""); // remove # from hex code

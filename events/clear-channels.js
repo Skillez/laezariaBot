@@ -8,14 +8,14 @@ const config = require("../bot-settings.json");
 bot.on('ready', () => {
     // Clear messages older than 3 hours on the delve lfg channel every 14 minutes.
     bot.setInterval(() => { // timer every 14 minutes to trigger function in brackets
-        CleanTheApplicationProcessChannel(config.Application_ProcessChannelID, 10) // clears #laezaria-apply messages that are older than 10 minutes.
-    }, 60000 * 14);
+        CleanTheApplicationProcessChannel(config.application.processChannelID, 11) // clears #laezaria-apply messages that are older than 11 minutes.
+    }, 60000 * 15);
 
     //////////////////////////////////////////////////////////////////////////////////////////////
 
     async function CleanTheApplicationProcessChannel(channelID, timeInMinutes) {
 
-        let appProcessChannel = await bot.guilds.cache.get(config.LaezariaServerID).channels.cache.find(ch => ch.id === channelID);
+        let appProcessChannel = await bot.guilds.cache.get(config.laezariaServerID).channels.cache.find(ch => ch.id === channelID);
         if (!appProcessChannel) return errorLog(`clear-channels.js:1 CleanTheApplicationProcessChannel()\nappProcessChannel is not found.`, undefined);
 
         // Get messages and filter by createdTimestamp && pinned && author.bot

@@ -50,7 +50,7 @@ bot.on('ready', async () => {
         switch (requestType) {
             case '🟩': { // Create a new emoji from a url
                 const emojiName = message.content.split(" ").slice(-1).toString().replace(/\*/g, '');
-                return bot.guilds.cache.get(config.LaezariaServerID).emojis.create(message.attachments.first().url, emojiName)
+                return bot.guilds.cache.get(config.laezariaServerID).emojis.create(message.attachments.first().url, emojiName)
                     .then(emoji => {
                         message.delete().catch(() => { return });
                         const embed_emoji_added = new Discord.MessageEmbed()
@@ -60,7 +60,7 @@ bot.on('ready', async () => {
                             .setFooter(`LOG:ID emojiVoteJS_1`)
                             .setTimestamp()
                             .setThumbnail(emoji.url)
-                        return sendEmbedLog(embed_emoji_added, config.BotLog_Minor_ChanneLID, 'Laezaria Bot - Minor Logs');
+                        return sendEmbedLog(embed_emoji_added, config.botlogs.minorChannelID, 'Laezaria Bot - Minor Logs');
                     })
                     .catch(error => {
                         if (error.message.includes('Maximum number of emojis reached') || error.message.includes('Maximum number of animated emojis reached')) return; // console.log(`error: Maximum number of emojis reached`);
@@ -79,8 +79,8 @@ bot.on('ready', async () => {
                     .setFooter(`LOG:ID emojiVoteJS_2`)
                     .setTimestamp()
                     .setThumbnail(emojiDeleteRequest.url)
-                return sendEmbedLog(embed_emoji_removed, config.BotLog_Minor_ChanneLID, 'Laezaria Bot - Minor Logs')
-                    .then(() => { bot.guilds.cache.get(config.LaezariaServerID).emojis.resolve(emojiDeleteRequest).delete() })
+                return sendEmbedLog(embed_emoji_removed, config.botlogs.minorChannelID, 'Laezaria Bot - Minor Logs')
+                    .then(() => { bot.guilds.cache.get(config.laezariaServerID).emojis.resolve(emojiDeleteRequest).delete() })
                     .catch(error => errorLog(`emoji-vote.js:2 requestHandler() error to remove a new emoji`, error));
             }
 
@@ -93,14 +93,14 @@ bot.on('ready', async () => {
 
     function checkEmojiRequests() {
         // Get messages from the emoji-channel and filter by author.bot && ✅ reactions && verified by staff
-        const emojiRequestChannel = bot.guilds.cache.get(config.LaezariaServerID).channels.cache.find(ch => ch.id === config.EmojiRequest_ChannelID);
+        const emojiRequestChannel = bot.guilds.cache.get(config.laezariaServerID).channels.cache.find(ch => ch.id === config.other.emojiRequestChannelID);
         if (!emojiRequestChannel) return errorLog(`emoji-vote.js:1 checkEmojiRequests()\nemojiRequestChannel is not found.`);
-        else if (!emojiRequestChannel.permissionsFor(bot.guilds.cache.get(config.LaezariaServerID).me).has(['MANAGE_MESSAGES', 'MANAGE_EMOJIS', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY']))  // requirement for emoji channel
+        else if (!emojiRequestChannel.permissionsFor(bot.guilds.cache.get(config.laezariaServerID).me).has(['MANAGE_MESSAGES', 'MANAGE_EMOJIS', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY']))  // requirement for emoji channel
             return errorLog(`emoji-vote.js:2 checkEmojiRequests()\nNot enough permissions for the #${emojiRequestChannel.name} channel.\n[MANAGE_MESSAGES - MANAGE_EMOJIS - ADD_REACTIONS - READ_MESSAGE_HISTORY]`, undefined)
         else {
             emojiRequestChannel.messages.fetch({ limit: 30 })
                 .then(messages => {
-                    const staffApprovedEmoji = bot.guilds.cache.get(config.LaezariaServerID).emojis.cache.find(emoji => emoji.name.toLowerCase() === 'laezaria');
+                    const staffApprovedEmoji = bot.guilds.cache.get(config.laezariaServerID).emojis.cache.find(emoji => emoji.name.toLowerCase() === 'laezaria');
                     if (!staffApprovedEmoji) return errorLog(`emoji-vote.js:3 checkEmojiRequests() 'laezaria' reaction not found.`);
                     const emojiRequestMessages = messages.filter(m => m.author.bot === true && m.reactions.cache.get('✅') && m.reactions.cache.get('✅').count >= reactsAmount && m.reactions.cache.has(staffApprovedEmoji.id));
 

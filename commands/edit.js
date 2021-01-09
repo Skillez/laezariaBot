@@ -5,7 +5,7 @@ module.exports.help = {
     name: "edit",
     description: "Modifies the bot messages.",
     type: "manager",
-    usage: `ℹ️ Format: **${config.BotPrefix}edit messageID contentToReplace**\n\nℹ️ Example: ${config.BotPrefix}edit 701686429289414696 I like trains`
+    usage: `ℹ️ Format: **${config.botPrefix}edit messageID contentToReplace**\n\nℹ️ Example: ${config.botPrefix}edit 701686429289414696 I like trains`
 };
 
 module.exports.run = async (bot, message, args) => {
@@ -21,9 +21,9 @@ module.exports.run = async (bot, message, args) => {
 
         if (messageID && message2edit) {
             return EditTheMessage(messageID, message2edit);
-        } else return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+        } else return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
             .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
-    } else return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+    } else return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
         .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -43,7 +43,7 @@ module.exports.run = async (bot, message, args) => {
                 let embed_edit_success = new Discord.MessageEmbed()
                     .setColor(embedColors.EditMessage)
                     .setAuthor(`Message modified!`, LaezariaIconURL)
-                    .setTitle(`${config.BotPrefix}edit`)
+                    .setTitle(`${config.botPrefix}edit`)
                     .setDescription(`New message content:\n` + '```' + `${A2}` + '```')
                     .addFields(
                         { name: 'Used by', value: `${message.author}`, inline: true },
@@ -55,7 +55,7 @@ module.exports.run = async (bot, message, args) => {
                 message.channel.send(`✅ Done!\nMessage modified!`)
                     .then(message => {
                         message.delete({ timeout: 5000 }).catch(() => { return; });
-                        return sendEmbedLog(embed_edit_success, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
+                        return sendEmbedLog(embed_edit_success, config.botlogs.channelID, 'Laezaria Bot - Logs');
                     });
             }
         }

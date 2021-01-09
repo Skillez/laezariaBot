@@ -48,8 +48,8 @@ bot.on('ready', async () => {
     }
 
     function givePointsToServerBooster() {
-        const getBoosterRole = bot.guilds.cache.get(config.LaezariaServerID).roles.cache.get(config.NitroRoleID);
-        if (!getBoosterRole) return errorLog(`booster-points.js:1 givePointsToServerBooster() I can't find nitro booster role - 'config.NitroRoleID'`);
+        const getBoosterRole = bot.guilds.cache.get(config.laezariaServerID).roles.cache.get(config.roles.nitroRoleID);
+        if (!getBoosterRole) return errorLog(`booster-points.js:1 givePointsToServerBooster() I can't find nitro booster role - 'config.roles.nitroRoleID'`);
 
         // Create a string of user tags
         const nitroList = getBoosterRole.members.map(m => m.user.tag).join(", ");
@@ -72,7 +72,7 @@ bot.on('ready', async () => {
         pointsLooper(getBoosterRole.members)
             .then(() => {
                 // Find the leaz emoji
-                let laezEmoji = bot.guilds.cache.get(config.LaezariaServerID).emojis.cache.find(emoji => emoji.name === 'laezaria');
+                let laezEmoji = bot.guilds.cache.get(config.laezariaServerID).emojis.cache.find(emoji => emoji.name === 'laezaria');
                 if (!laezEmoji) laezEmoji = 'laezaria';
                 // Send an embed message log
                 const embed_confirmation_weekly_points = new Discord.MessageEmbed()
@@ -84,7 +84,7 @@ bot.on('ready', async () => {
                     .setThumbnail(LaezariaIconURL)
                     .setFooter(currentUTCDate())
                     .setTimestamp()
-                return sendEmbedLog(embed_confirmation_weekly_points, config.BotLog_ChannelID, 'Laezaria Bot Points - Logs');
+                return sendEmbedLog(embed_confirmation_weekly_points, config.botlogs.channelID, 'Laezaria Bot Points - Logs');
             });
 
     }
@@ -119,8 +119,8 @@ bot.on('ready', async () => {
     }
 
     function givePointsToServerBoosterOld() {
-        const getBoosterRole = bot.guilds.cache.get(config.LaezariaServerID).roles.cache.get(config.NitroRoleID);
-        if (!getBoosterRole) return errorLog(`booster-points.js:1 givePointsToServerBooster() I can't find nitro booster role - 'config.NitroRoleID'`);
+        const getBoosterRole = bot.guilds.cache.get(config.laezariaServerID).roles.cache.get(config.roles.nitroRoleID);
+        if (!getBoosterRole) return errorLog(`booster-points.js:1 givePointsToServerBooster() I can't find nitro booster role - 'config.roles.nitroRoleID'`);
 
         // Create a string of user tags with space
         const nitroList = getBoosterRole.members.map(m => m.user.tag).join(" ");
@@ -164,7 +164,7 @@ bot.on('ready', async () => {
                     .setThumbnail(LaezariaIconURL)
                     .setFooter(currentUTCDate())
                     .setTimestamp()
-                return sendEmbedLog(embed_confirmation_weekly_points, config.BotLog_ChannelID, 'Laezaria Bot Points - Logs');
+                return sendEmbedLog(embed_confirmation_weekly_points, config.botlogs.channelID, 'Laezaria Bot Points - Logs');
             });
     }
 });

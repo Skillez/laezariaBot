@@ -6,7 +6,7 @@ module.exports.help = {
     name: "points2",
     description: "Manages user Laezaria Points.",
     type: "manager",
-    usage: `ℹ️ Format: **${config.BotPrefix}points add/del @mention/userID amount**\n\nℹ️ Examples:\n${config.BotPrefix}points add @Skillez 100\n${config.BotPrefix}points del ${config.BotOwnerID} 100`
+    usage: `ℹ️ Format: **${config.botPrefix}points add/del @mention/userID amount**\n\nℹ️ Examples:\n${config.botPrefix}points add @Skillez 100\n${config.botPrefix}points del ${config.botOwnerID} 100`
 };
 
 module.exports.run = async (bot, message, args) => {
@@ -30,13 +30,13 @@ module.exports.run = async (bot, message, args) => {
             case "add": return addPoints(mentionedUser, parseInt(args[2]));
             case "del": return delPoints(mentionedUser, parseInt(args[2]));
 
-            default: return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+            default: return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
                 .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
         }
     }
 
     // If wrong command format
-    return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+    return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
         .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -73,7 +73,7 @@ module.exports.run = async (bot, message, args) => {
                 message.channel.send(embedMessage(`You have added **+${amount.toLocaleString()}** points to ${user}!`, message.author))
                     .then(info => {
                         info.delete({ timeout: 10000 })
-                        sendEmbedLog(embedMessageLog(`${message.author} added +${amount.toLocaleString()} points!`, user), config.BotLog_ChannelID, 'Laezaria Bot Points - Logs');
+                        sendEmbedLog(embedMessageLog(`${message.author} added +${amount.toLocaleString()} points!`, user), config.botlogs.channelID, 'Laezaria Bot Points - Logs');
                     }).catch(() => { return });
             });
         }
@@ -101,7 +101,7 @@ module.exports.run = async (bot, message, args) => {
                 message.channel.send(embedMessage(`${user} received **+${amount.toLocaleString()}** points!\nNew balance: **${currentLB.find(u => u.id === user.id).points.toLocaleString()}**`, message.author))
                     .then(info => {
                         info.delete({ timeout: 10000 })
-                        sendEmbedLog(embedMessageLog(`${message.author} added +${amount.toLocaleString()} points!`, user), config.BotLog_ChannelID, 'Laezaria Bot Points - Logs');
+                        sendEmbedLog(embedMessageLog(`${message.author} added +${amount.toLocaleString()} points!`, user), config.botlogs.channelID, 'Laezaria Bot Points - Logs');
                     }).catch(() => { return });
             });
         }
@@ -187,14 +187,14 @@ module.exports.run = async (bot, message, args) => {
                     message.channel.send(embedMessage(`Removed **-${amount.toLocaleString()}** points from ${user}!\nNew balance: **${currentLB.find(u => u.id === user.id).points.toLocaleString()}**`, message.author))
                         .then(info => {
                             info.delete({ timeout: 10000 })
-                            sendEmbedLog(embedMessageLog(`${message.author} removed -${amount.toLocaleString()} points!`, user), config.BotLog_ChannelID, 'Laezaria Bot Points - Logs');
+                            sendEmbedLog(embedMessageLog(`${message.author} removed -${amount.toLocaleString()} points!`, user), config.botlogs.channelID, 'Laezaria Bot Points - Logs');
                         }).catch(() => { return });
                 } else {
                     // Send an embed message confirmation (removed all user points)
                     message.channel.send(embedMessage(`Removed **-${amount.toLocaleString()}** points from ${user}!\nUser doesn't have any points left, so has been removed from the leaderboard!`, message.author))
                         .then(info => {
                             info.delete({ timeout: 10000 })
-                            sendEmbedLog(embedMessageLog(`${message.author} removedd -${amount.toLocaleString()} points!`, user), config.BotLog_ChannelID, 'Laezaria Bot Points - Logs');
+                            sendEmbedLog(embedMessageLog(`${message.author} removedd -${amount.toLocaleString()} points!`, user), config.botlogs.channelID, 'Laezaria Bot Points - Logs');
                         }).catch(() => { return });
                 }
             });

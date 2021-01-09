@@ -6,7 +6,7 @@ const config = require("../bot-settings.json");
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 bot.on('messageReactionAdd', async (reaction, user) => {
-    if (reaction.message.channel.id === config.Application_ChannelID) {
+    if (reaction.message.channel.id === config.application.channelID) {
         if (user.id === bot.user.id) return;
 
         if (reaction.message.guild.members.cache.some(check => check.id === user.id) === false) {
@@ -15,12 +15,12 @@ bot.on('messageReactionAdd', async (reaction, user) => {
         }
 
         // let HighestRole = reaction.message.guild.members.cache.get(user.id).roles.highest.name
-        let SenpaiRole = reaction.message.guild.members.cache.get(user.id).roles.cache.some(role => role.id === config.SenpaiRoleID);
-        let ViceRole = reaction.message.guild.members.cache.get(user.id).roles.cache.some(role => role.id === config.ViceRoleID);
-        let ManagerRole = reaction.message.guild.members.cache.get(user.id).roles.cache.some(role => role.id === config.ManagerRoleID);
-        let EnforcerRole = reaction.message.guild.members.cache.get(user.id).roles.cache.some(role => role.id === config.EnforcerRoleID);
-        let CaptainRole = reaction.message.guild.members.cache.get(user.id).roles.cache.some(role => role.id === config.CaptainRoleID);
-        let MemberRole = reaction.message.guild.members.cache.get(user.id).roles.cache.some(role => role.id === config.MemberRoleID);
+        let SenpaiRole = reaction.message.guild.members.cache.get(user.id).roles.cache.some(role => role.id === config.roles.senpaiRoleID);
+        let ViceRole = reaction.message.guild.members.cache.get(user.id).roles.cache.some(role => role.id === config.roles.viceRoleID);
+        let ManagerRole = reaction.message.guild.members.cache.get(user.id).roles.cache.some(role => role.id === config.roles.managerRoleID);
+        let EnforcerRole = reaction.message.guild.members.cache.get(user.id).roles.cache.some(role => role.id === config.roles.enforcerRoleID);
+        let CaptainRole = reaction.message.guild.members.cache.get(user.id).roles.cache.some(role => role.id === config.roles.captainRoleID);
+        let MemberRole = reaction.message.guild.members.cache.get(user.id).roles.cache.some(role => role.id === config.roles.memberRoleID);
         // console.error(`User: ${user.tag}\nSenpaiRole: ${SenpaiRole}\nViceRole: ${ViceRole}\nManagerRole: ${ManagerRole}\nCaptainRole: ${CaptainRole}\nEnforcerRole: ${EnforcerRole}\nMemberRole: ${MemberRole}`);
 
         // Fetch application reaction message to enable reaction function
@@ -58,7 +58,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                 if (ManagerRole || ViceRole || SenpaiRole) { // Manager+ reaction functions
                     if (reaction.emoji.name === 'yeah') {
 
-                        let botLogChannel = bot.channels.cache.get(config.BotLog_ChannelID);
+                        let botLogChannel = bot.channels.cache.get(config.botlogs.channelID);
                         if (botLogChannel) {
                             let YeahMessageFunc = `${user}, attention required!\n―――――――――――――――――\nIt looks like you've **ACCEPTED** this application!\n${reaction.message.url}\n\n**Target: ${applicantUser}**\n${applicantUser.tag}\nID: ${applicantUser.id}\n` + "```Please, confirm that the action is intended.```\n✅ Sends a welcome message to the target user\n❌ closes this menu if that was a misclick (the bot will not send any messages)";
                             return botLogChannel.send(YeahMessageFunc).then((message) => applicationVoteFinished(reaction, message, user, applicantGuildMember, applicantUser));
@@ -70,7 +70,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
 
                     if (reaction.emoji.name === 'nay') {
 
-                        let botLogChannel = bot.channels.cache.get(config.BotLog_ChannelID);
+                        let botLogChannel = bot.channels.cache.get(config.botlogs.channelID);
                         if (botLogChannel) {
                             let NayMessageFunc = `${user}, attention required!\n―――――――――――――――――\nIt looks like you've **REJECTED** this application!\n${reaction.message.url}\n\n**Target: ${applicantUser}**\n${applicantUser.tag}\nID: ${applicantUser.id}\n` + "```Please, confirm that the action is intended.```\n✅ Sends a reject message to the target user\n❌ closes this menu if that was a misclick (the bot will not send any messages)";
                             return botLogChannel.send(NayMessageFunc).then((message) => applicationVoteFinished(reaction, message, user, applicantGuildMember, applicantUser));
@@ -80,14 +80,14 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                         }
                     }
 
-                    if (reaction.emoji.name === '⚠️') return addUserRole(applicantGuildMember, applicantUser, config.Application_RestrictionRoleID, reaction.emoji.name);
+                    if (reaction.emoji.name === '⚠️') return addUserRole(applicantGuildMember, applicantUser, config.application.restrictionRoleID, reaction.emoji.name);
                 }
 
                 if (EnforcerRole || ManagerRole || ViceRole || SenpaiRole) { // Enforcer+ reaction functions
                     if (reaction.emoji.name === '✅') {
                         if (user.id === referralUser) {
                             // console.log(`✅ Referral reaction - correct\nReferral user info: ${referralUser}\n-------------------------------------------------------------------------------------------`);
-                            return addUserRole(applicantGuildMember, applicantUser, config.MemberRoleID, reaction.emoji.name);
+                            return addUserRole(applicantGuildMember, applicantUser, config.roles.memberRoleID, reaction.emoji.name);
                         } else {
                             // console.log(`❌ Application message doesn't contain a referral field or ${user.id} is not equal to ${referralUser}.\n-------------------------------------------------------------------------------------------`);
                             return reaction.users.remove(user.id);
@@ -98,7 +98,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                 if (CaptainRole || EnforcerRole || ManagerRole || ViceRole || SenpaiRole) { // Captain+ reaction functions
                     if (reaction.emoji.name === '🍏') return;
                     if (reaction.emoji.name === '🍎') return DMnegativeReaction();
-                    if (reaction.emoji.name === 'laezaria') return addUserRole(applicantGuildMember, applicantUser, config.MemberRoleID, reaction.emoji.name);
+                    if (reaction.emoji.name === 'laezaria') return addUserRole(applicantGuildMember, applicantUser, config.roles.memberRoleID, reaction.emoji.name);
                 }
 
                 if (MemberRole || CaptainRole || EnforcerRole || ManagerRole || ViceRole || SenpaiRole) { // Member+ reaction functions
@@ -216,8 +216,8 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                 .setThumbnail(LaezariaIconURL)
                 .setTimestamp()
 
-            if (reaction.emoji.name === "yeah") return sendEmbedLog(embed_accept_member_left_success_log, config.BotLog_DirectMessageChannelID, 'Laezaria Bot - Direct Messages');
-            return sendEmbedLog(embed_reject_member_left_success_log, config.BotLog_DirectMessageChannelID, 'Laezaria Bot - Direct Messages');
+            if (reaction.emoji.name === "yeah") return sendEmbedLog(embed_accept_member_left_success_log, config.botlogs.directMessageChannelID, 'Laezaria Bot - Direct Messages');
+            return sendEmbedLog(embed_reject_member_left_success_log, config.botlogs.directMessageChannelID, 'Laezaria Bot - Direct Messages');
         }
 
         if (applicantGuildMember.user.bot) return;
@@ -250,14 +250,14 @@ bot.on('messageReactionAdd', async (reaction, user) => {
 
         return applicantGuildMember.send(message2send)
             .then(() => {
-                if (reaction.emoji.name === "yeah") return sendEmbedLog(embed_accept_dm_success_log, config.BotLog_DirectMessageChannelID, 'Laezaria Bot - Direct Messages');
-                return sendEmbedLog(embed_reject_dm_success_log, config.BotLog_DirectMessageChannelID, 'Laezaria Bot - Direct Messages');
+                if (reaction.emoji.name === "yeah") return sendEmbedLog(embed_accept_dm_success_log, config.botlogs.directMessageChannelID, 'Laezaria Bot - Direct Messages');
+                return sendEmbedLog(embed_reject_dm_success_log, config.botlogs.directMessageChannelID, 'Laezaria Bot - Direct Messages');
 
             }).catch(() => { // IF DIRECT MESSAGE CANNOT BE DELIEVERED
                 // define the embed: channel reject success log
                 let embed_reject_channel_success_log = new Discord.MessageEmbed()
                     .setColor(embedColors.AppRejected)
-                    .setDescription(`\n_Receiver has DMs disabled.\nReject message sent on the <#${config.WelcomeChannelID}> instead._\n[**Jump to application message**](${reaction.message.url})`)
+                    .setDescription(`\n_Receiver has DMs disabled.\nReject message sent on the <#${config.channels.welcomeChannelID}> instead._\n[**Jump to application message**](${reaction.message.url})`)
                     .setAuthor(`Application Rejected!`, LaezariaIconURL)
                     .addFields(
                         { name: `${reaction.emoji} Used by`, value: user, inline: true },
@@ -270,7 +270,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                 // define the embed: channel accept success log
                 let embed_accept_channel_success_log = new Discord.MessageEmbed()
                     .setColor(embedColors.AppAccepted)
-                    .setDescription(`\n_Receiver has DMs disabled.\nWelcome message sent on the <#${config.WelcomeChannelID}> instead._\n[**Jump to application message**](${reaction.message.url})`)
+                    .setDescription(`\n_Receiver has DMs disabled.\nWelcome message sent on the <#${config.channels.welcomeChannelID}> instead._\n[**Jump to application message**](${reaction.message.url})`)
                     .setAuthor(`Application Accepted!`, LaezariaIconURL)
                     .addFields(
                         { name: `${reaction.emoji} Used by`, value: user, inline: true },
@@ -280,12 +280,12 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                     .setThumbnail(applicantGuildMember.user.avatarURL())
                     .setTimestamp()
 
-                let MessageChannel = reaction.message.channel.guild.channels.cache.find(ch => ch.id === config.WelcomeChannelID);
+                let MessageChannel = reaction.message.channel.guild.channels.cache.find(ch => ch.id === config.channels.welcomeChannelID);
                 if (MessageChannel) {
                     return MessageChannel.send(message2send)
                         .then(() => {
-                            if (reaction.emoji.name === "yeah") sendEmbedLog(embed_accept_channel_success_log, config.BotLog_DirectMessageChannelID, 'Laezaria Bot - Direct Messages');
-                            return sendEmbedLog(embed_reject_channel_success_log, config.BotLog_DirectMessageChannelID, 'Laezaria Bot - Direct Messages');
+                            if (reaction.emoji.name === "yeah") sendEmbedLog(embed_accept_channel_success_log, config.botlogs.directMessageChannelID, 'Laezaria Bot - Direct Messages');
+                            return sendEmbedLog(embed_reject_channel_success_log, config.botlogs.directMessageChannelID, 'Laezaria Bot - Direct Messages');
                         });
                 }
             });
@@ -307,7 +307,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                     .setFooter(`LOG:ID ApplicationReactionJS_7`)
                     .setThumbnail(LaezariaIconURL)
                     .setTimestamp()
-                return sendEmbedLog(add_reaction_role_dm_error, config.BotLog_DirectMessageChannelID, 'Laezaria Bot - Direct Messages');
+                return sendEmbedLog(add_reaction_role_dm_error, config.botlogs.directMessageChannelID, 'Laezaria Bot - Direct Messages');
 
             });
     }
@@ -318,7 +318,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
 
         if (!role2add) {
             reaction.users.remove(user.id);
-            return errorLog(`application-reactions.js:1 addUserRole()\nI cannot find the role with provided ID in config.MemberRoleID.`, undefined);
+            return errorLog(`application-reactions.js:1 addUserRole()\nI cannot find the role with provided ID in config.roles.memberRoleID.`, undefined);
         }
 
         if (reactionUsed === 'laezaria') {
@@ -339,10 +339,10 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                         .setFooter(`LOG:ID ApplicationReactionJS_8`)
                         .setThumbnail(LaezariaIconURL)
                         .setTimestamp()
-                    return sendEmbedLog(member_role_log_confirmation, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
+                    return sendEmbedLog(member_role_log_confirmation, config.botlogs.channelID, 'Laezaria Bot - Logs');
                 }
             } else { // if applicantGuildMember is not found
-                return ReactAuthor.send(`❌ There is an error with your recent activity!\n\nI couldn't add **${role2add.name}** role to ${applicantUser.tag} and you have do that manually if possible.\nPlease, check out the <#${config.BotLog_ChannelID}> for more information!`)
+                return ReactAuthor.send(`❌ There is an error with your recent activity!\n\nI couldn't add **${role2add.name}** role to ${applicantUser.tag} and you have do that manually if possible.\nPlease, check out the <#${config.botlogs.channelID}> for more information!`)
                     .catch(error => errorLog(`application-reactions.js:3 addUserRole()\nI cannot send the message to the ReactAuthor.`, error))
                     .then(() => {
 
@@ -358,7 +358,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                             .setFooter(`LOG:ID ApplicationReactionJS_9`)
                             .setThumbnail(LaezariaIconURL)
                             .setTimestamp()
-                        return sendEmbedLog(member_role_error_log, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
+                        return sendEmbedLog(member_role_error_log, config.botlogs.channelID, 'Laezaria Bot - Logs');
                     });
             }
         }
@@ -381,10 +381,10 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                         .setFooter(`LOG:ID ApplicationReactionJS_10`)
                         .setThumbnail(LaezariaIconURL)
                         .setTimestamp()
-                    return sendEmbedLog(restriction_role_log_confirmation, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
+                    return sendEmbedLog(restriction_role_log_confirmation, config.botlogs.channelID, 'Laezaria Bot - Logs');
                 }
             } else { // if applicantGuildMember is not found
-                return ReactAuthor.send(`❌ There is an error with your recent activity!\n\nI couldn't add **${role2add.name}** role to ${applicantUser.tag} and you have do that manually if possible.\nPlease, check out the <#${config.BotLog_ChannelID}> for more information!`)
+                return ReactAuthor.send(`❌ There is an error with your recent activity!\n\nI couldn't add **${role2add.name}** role to ${applicantUser.tag} and you have do that manually if possible.\nPlease, check out the <#${config.botlogs.channelID}> for more information!`)
                     .catch(error => errorLog(`application-reactions.js:5 addUserRole()\nI cannot send the message to the ReactAuthor.`, error))
                     .then(() => {
 
@@ -400,7 +400,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                             .setFooter(`LOG:ID ApplicationReactionJS_11`)
                             .setThumbnail(LaezariaIconURL)
                             .setTimestamp()
-                        return sendEmbedLog(restriction_role_error_log, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
+                        return sendEmbedLog(restriction_role_error_log, config.botlogs.channelID, 'Laezaria Bot - Logs');
                     });
             }
         }
@@ -423,10 +423,10 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                         .setFooter(`LOG:ID ApplicationReactionJS_12`)
                         .setThumbnail(LaezariaIconURL)
                         .setTimestamp()
-                    return sendEmbedLog(member_role_log_confirmation, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
+                    return sendEmbedLog(member_role_log_confirmation, config.botlogs.channelID, 'Laezaria Bot - Logs');
                 }
             } else { // if applicantGuildMember is not found
-                return ReactAuthor.send(`❌ There is an error with your recent activity!\n\nI couldn't add **${role2add.name}** role to ${applicantUser.tag} and you have do that manually if possible.\nPlease, check out the <#${config.BotLog_ChannelID}> for more information!`)
+                return ReactAuthor.send(`❌ There is an error with your recent activity!\n\nI couldn't add **${role2add.name}** role to ${applicantUser.tag} and you have do that manually if possible.\nPlease, check out the <#${config.botlogs.channelID}> for more information!`)
                     .catch(error => errorLog(`application-reactions.js:7 addUserRole()\nI cannot send the message to the ReactAuthor.`, error))
                     .then(() => {
 
@@ -442,7 +442,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                             .setFooter(`LOG:ID ApplicationReactionJS_13`)
                             .setThumbnail(LaezariaIconURL)
                             .setTimestamp()
-                        return sendEmbedLog(member_role_error_log, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
+                        return sendEmbedLog(member_role_error_log, config.botlogs.channelID, 'Laezaria Bot - Logs');
                     });
             }
         }

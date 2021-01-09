@@ -11,7 +11,7 @@ const spreadsheetIdd = '1IgTspXysaKNfMfxTypk1UMysDo7KcgDLDq6eqS4M_G4';
 
 bot.on("message", async message => {
 
-    if (message.channel.id != config.Application_ChannelID) return; // return if not application channel
+    if (message.channel.id != config.application.channelID) return; // return if not application channel
     if (message.author.id != bot.user.id || !message.embeds[0] || !message.embeds[0].fields[0]) return;
     // return if message author is other than my application or message without embed or message embed without field[0]
 
@@ -106,6 +106,6 @@ bot.on("message", async message => {
             .setFooter(`LOG:ID BlacklistedApplicantsJS_1`)
             .setThumbnail(message.author.avatarURL())
             .setTimestamp()
-        sendEmbedLog(embed_warning_application, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
+        sendEmbedLog(embed_warning_application, config.botlogs.channelID, 'Laezaria Bot - Logs');
     }
 });

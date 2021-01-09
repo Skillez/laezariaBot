@@ -5,7 +5,7 @@ module.exports.help = {
     name: "reload",
     description: "Reloads or load new commands.",
     type: "owner",
-    usage: `ℹ️ Format: **${config.BotPrefix}reload commandName**\n\nℹ️ Example: ${config.BotPrefix}reload apply`
+    usage: `ℹ️ Format: **${config.botPrefix}reload commandName**\n\nℹ️ Example: ${config.botPrefix}reload apply`
 };
 
 module.exports.run = async (bot, message, args) => {
@@ -14,7 +14,7 @@ module.exports.run = async (bot, message, args) => {
     //                                    reload commandName                                    //
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    if (!args.length) return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+    if (!args.length) return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
         .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
     const commandName = args[0].toLowerCase();

@@ -6,7 +6,7 @@ const config = require("../bot-settings.json");
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 bot.on('guildMemberRemove', async member => {
-    const goodbyeChannel = member.guild.channels.cache.find(ch => ch.id === config.GoodbyeChannelID);
+    const goodbyeChannel = member.guild.channels.cache.find(ch => ch.id === config.channels.goodbyeChannelID);
     let goodbyeEmojiReact = member.guild.emojis.cache.find(emoji => emoji.name === 'pepoHug');
     let goodbyeEmojiSad = member.guild.emojis.cache.find(emoji => emoji.name === 'apeepoSadLove');
     let goodbyeEmojiLaezaria = member.guild.emojis.cache.find(emoji => emoji.name === 'laezaria');

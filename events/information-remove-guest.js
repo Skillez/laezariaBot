@@ -6,9 +6,9 @@ const config = require("../bot-settings.json");
 //////////////////////////////////////////////////////////////////////////////////////////////
 bot.on('messageReactionAdd', async (reaction, user) => {
 
-    if (reaction.message.channel.id === config.InformationChannelID) {
+    if (reaction.message.channel.id === config.channels.informationChannelID) {
 
-        if (reaction.message.id === config.InformationReactRoleMessageID) {
+        if (reaction.message.id === config.other.informationReactRoleMessageID) {
             if (reaction.emoji.name === 'wf' || reaction.emoji.name === 'csgo' || reaction.emoji.name === 'LoL' || reaction.emoji.name === 'destiny') return;
         }
 
@@ -24,7 +24,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                         .setDescription(`${user.tag}(${user}) reacted with ${reaction.emoji}`)
                         .setFooter(`ID: ${user.id}`)
                         .setTimestamp()
-                    sendEmbedLog(embed_information_react_log, config.BotLog_Minor_ChanneLID, 'Laezaria Bot - Minor Logs');
+                    sendEmbedLog(embed_information_react_log, config.botlogs.minorChannelID, 'Laezaria Bot - Minor Logs');
                 }
 
                 if (reaction.emoji.name === 'laezaria' && !user.bot) {
@@ -42,13 +42,13 @@ bot.on('messageReactionAdd', async (reaction, user) => {
     async function removeGuestRole(user) {
         // user that reacted under the message as a GuildMember object and role to remove
         let reactAuthor = reaction.message.guild.members.cache.find(member => member.id === user.id);
-        let role2remove = reaction.message.guild.roles.cache.find(role => role.id === config.GuestRoleID);
+        let role2remove = reaction.message.guild.roles.cache.find(role => role.id === config.roles.guestRoleID);
 
         // check if role and user are correct, if so then remove guest role
         if (!role2remove) return errorLog(`information-remove-guest.js:1 removeGuestRole()\nrole2remove not found.`, error);
 
         if (reactAuthor) {
-            if (reactAuthor.roles.cache.some(role => role.id === config.GuestRoleID)) {
+            if (reactAuthor.roles.cache.some(role => role.id === config.roles.guestRoleID)) {
                 let roleIsRemoved = await reactAuthor.roles.remove(role2remove)
                     .catch(error => {
                         reactAuthor.send(`❌ Error during role deletion, try again or contact discord manager.`)
@@ -63,7 +63,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                         .setDescription(`${user.tag}(${user}) reacted with ${reaction.emoji}`)
                         .setFooter(`ID: ${user.id}`)
                         .setTimestamp()
-                    sendEmbedLog(embed_information_laez_react_log, config.BotLog_Minor_ChanneLID, 'Laezaria Bot - Minor Logs');
+                    sendEmbedLog(embed_information_laez_react_log, config.botlogs.minorChannelID, 'Laezaria Bot - Minor Logs');
 
                     return reactAuthor.send(`${user}, Your ${role2remove.name} role has been removed 😃`)
                     // .then(message => { message.delete({ timeout: 10000 }).catch(() => { return; }) });
@@ -76,7 +76,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                     .setDescription(`${user.tag}(${user}) reacted with ${reaction.emoji}`)
                     .setFooter(`ID: ${user.id}`)
                     .setTimestamp()
-                    sendEmbedLog(embed_information_react_log, config.BotLog_Minor_ChanneLID, 'Laezaria Bot - Minor Logs');
+                    sendEmbedLog(embed_information_react_log, config.botlogs.minorChannelID, 'Laezaria Bot - Minor Logs');
             }
         }
     }

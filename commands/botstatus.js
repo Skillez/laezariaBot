@@ -5,7 +5,7 @@ module.exports.help = {
     name: "botstatus",
     description: "Temporarily sets a new status for the bot.",
     type: "manager",
-    usage: `ℹ️ Format: **${config.BotPrefix}botstatus statusType messageToSet**\n\nAvailable statusType options:  \`\`\`less\n[1] PLAYING\n[2] WATCHING\n[3] LISTENING\n[4] STREAMING\n[5] CLEAR\`\`\`\nℹ️ Examples:\n${config.BotPrefix}botstatus playing with pp\n${config.BotPrefix}botstatus watching youtube\n${config.BotPrefix}listening spotify\n${config.BotPrefix}botstatus streaming twitchUsername visit my cool stream\n${config.BotPrefix}botstatus clear`
+    usage: `ℹ️ Format: **${config.botPrefix}botstatus statusType messageToSet**\n\nAvailable statusType options:  \`\`\`less\n[1] PLAYING\n[2] WATCHING\n[3] LISTENING\n[4] STREAMING\n[5] CLEAR\`\`\`\nℹ️ Examples:\n${config.botPrefix}botstatus playing with pp\n${config.botPrefix}botstatus watching youtube\n${config.botPrefix}listening spotify\n${config.botPrefix}botstatus streaming twitchUsername visit my cool stream\n${config.botPrefix}botstatus clear`
 };
 
 module.exports.run = async (bot, message, args) => {
@@ -22,7 +22,7 @@ module.exports.run = async (bot, message, args) => {
 
         if (args[0].toUpperCase() === 'PLAYING' || args[0].toUpperCase() === 'LISTENING' || args[0].toUpperCase() === 'WATCHING') {
 
-            if (!args[1]) return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+            if (!args[1]) return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
                 .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
             let BotTextStatus = message.content.split(' ').splice(2).join(' ');
@@ -31,16 +31,16 @@ module.exports.run = async (bot, message, args) => {
 
         if (args[0].toUpperCase() === 'STREAMING') {
 
-            if (!args[1] || !args[2]) return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+            if (!args[1] || !args[2]) return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
                 .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
             let BotTextStatus = message.content.split(' ').splice(3).join(' ');
             return SetBotStatus(args[0].toUpperCase(), BotTextStatus, args[1]);
         }
 
-        return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+        return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
             .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
-    } else return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+    } else return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
         .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -78,7 +78,7 @@ module.exports.run = async (bot, message, args) => {
             if (!botActivityStream) return;
             else {
                 // console.log(`DEBUG: Activity set to ${presence.activities[0].type} ${presence.activities[0].name} ${presence.activities[0].url}`)
-                message.channel.send(`✅ Bot streaming status set!\nType **${config.BotPrefix}${module.exports.help.name} clear** to clear the status.`)
+                message.channel.send(`✅ Bot streaming status set!\nType **${config.botPrefix}${module.exports.help.name} clear** to clear the status.`)
                     .then(message => message.delete({ timeout: 5000 })).catch(() => { return });
             }
         }
@@ -92,7 +92,7 @@ module.exports.run = async (bot, message, args) => {
             if (!botActivityUpdate) return;
             else {
                 // console.log(`DEBUG: Activity set to ${presence.activities[0].type} ${presence.activities[0].name}`)
-                message.channel.send(`✅ Bot ${A1.toLowerCase()} status set!\nType **${config.BotPrefix}${module.exports.help.name} clear** to clear the status.`)
+                message.channel.send(`✅ Bot ${A1.toLowerCase()} status set!\nType **${config.botPrefix}${module.exports.help.name} clear** to clear the status.`)
                     .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // Confirm changed botstatus playing, listening, watching.
             }
         }

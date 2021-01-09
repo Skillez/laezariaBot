@@ -1,4 +1,4 @@
-const { Discord, LaezariaIconURL, errorLog, removeUserLastMessage, sendEmbedLog, embedColors, botPermission } = require('../app');
+const { Discord, LaezariaIconURL, errorLog, removeUserLastMessage, embedColors, botReply, embedMessage, getEmoji, sendEmbedLog } = require('../app');
 const config = require("../bot-settings.json");
 
 module.exports.help = {
@@ -9,704 +9,781 @@ module.exports.help = {
 };
 
 module.exports.run = async (bot, message) => {
-
     //////////////////////////////////////////////////////////////////////////////////////////////
     //                                  interactive application                                 //
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    if (message.channel.id != config.Application_ProcessChannelID) {
-        return message.reply(`You can only apply on the <#${config.Application_ProcessChannelID}> channel!`)
-            .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
-    }
+    const responseTime = 600000;
+    let applicantNickname = 'ERROR';
+    let refferalMention = 'None';
+    let troveMastery = 'ERROR';
+    let geodeMastery = 'ERROR';
+    let powerRank = 'ERROR';
+    let otherClubs = 'None';
 
-    if (message.member.roles.cache.some(role => role.id === config.GuestRoleID))
-        return setTimeout(() => {
-            GuestQuestion1();
-        }, 1000);
-    // message.reply(`Hello!\nThank you for your interest to join **${bot.guilds.cache.get(config.LaezariaServerID).name}** <:laezaria:582281105298817032>\nUnfortunately, you can't apply at the moment.\nPlease take some time to familiarise yourself with our <#${config.InformationChannelID}> channel before you proceed to send an application.`)
-    //     .then(message => message.delete({ timeout: 20000 })).catch(() => { return });
-
-    if (message.member.roles.cache.some(role => role.id === config.MemberRoleID))
-        return message.reply(`Hello!\nIt seems that you are an ex-member of the club, if you would like to rejoin the club, please contact any of our club's staffs (senpai, manager).`)
-            .then(message => message.delete({ timeout: 20000 })).catch(() => { return });
-
-    if (message.member.roles.cache.some(role => role.id === config.Application_RestrictionRoleID))
-        return message.reply(`You are banned from using this command.`)
-            .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
-
+    let feedbackRate = 0;
+    let feedbackText = 'ERROR';
+    let applicationURL;
 
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    const appChannel = message.guild.channels.cache.find(ch => ch.id === config.Application_ChannelID);
-    const appStorageChannel = message.guild.channels.cache.find(ch => ch.id === config.Application_StorageChannelID);
-    const appProcessChannel = message.guild.channels.cache.find(ch => ch.id === config.Application_ProcessChannelID);
+    const appChannel = message.guild.channels.cache.find(ch => ch.id === config.application.channelID);
+    const appStorageChannel = message.guild.channels.cache.find(ch => ch.id === config.application.storageChannelID);
+    const appProcessChannel = message.guild.channels.cache.find(ch => ch.id === config.application.processChannelID);
 
-    if (appChannel && appStorageChannel) {
-        const appChannelReadMessagesCheck = await appChannel.messages.fetch({ limit: 1 }).catch(() => { return });
-        const appStorageChannelReadMessagesCheck = await appStorageChannel.messages.fetch({ limit: 1 }).catch(() => { return });
-
-        if (!appChannelReadMessagesCheck || !appStorageChannelReadMessagesCheck) {
-            errorLog(`apply.js:1\nNot enough permissions for the #${appChannel.name} or #${appStorageChannel.name} channel.\n[READ_MESSAGES]`, undefined)
-            return message.reply(`Missing ${bot.user} bot permissions, contact discord admin to fix that issue.`).then(message => { message.delete({ timeout: 10000 }) });
-        }
-    } else { // if missing one of the required channels
-        // define the embed: missing application/storage channel
-        let embed_application_missing_channels = new Discord.MessageEmbed()
-            .setColor('RED')
-            .setAuthor('apply.js - ERROR', LaezariaIconURL)
-            .setTitle(`Club Application System - ERROR`)
-            .addFields({ name: 'Reason', value: `I cannot locate the **Application** or/and **Storage** channel`, inline: false })
-            .setFooter(`LOG:ID ClubApplicationJS_1`)
-            .setThumbnail(LaezariaIconURL)
-            .setTimestamp()
-        return sendEmbedLog(embed_application_missing_channels, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
-    }
-
-    if (!appChannel.permissionsFor(message.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'])) { // requirement for application channel
-        errorLog(`apply.js:2 Not enough permissions for the #${appChannel.name} channel.\n[SEND_MESSAGES - EMBED_LINKS - ADD_REACTIONS - READ_MESSAGE_HISTORY]`, undefined)
-        return message.reply(`Missing ${bot.user} bot permissions, contact discord admin to fix that issue.`).then(message => { message.delete({ timeout: 10000 }) });
-    }
-
-    else if (!appStorageChannel.permissionsFor(message.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS', 'ATTACH_FILES', 'READ_MESSAGE_HISTORY'])) { // requirement for application storage channel
-        errorLog(`apply.js:3 Not enough permissions for the #${appStorageChannel.name} channel.\n[SEND_MESSAGES - EMBED_LINKS - ATTACH_FILES - READ_MESSAGE_HISTORY]`, undefined)
-        return message.reply(`Missing ${bot.user} bot permissions, contact discord admin to fix that issue.`).then(message => { message.delete({ timeout: 10000 }) });
-    }
-
-    else if (!appProcessChannel.permissionsFor(message.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS', 'ADD_REACTIONS', 'READ_MESSAGE_HISTORY'])) { // requirement for application storage channel
-        errorLog(`apply.js:4 Not enough permissions for the #${appProcessChannel.name} channel.\n[SEND_MESSAGES - EMBED_LINKS - ADD_REACTIONS - READ_MESSAGE_HISTORY]`, undefined)
-        return message.reply(`Missing ${bot.user} bot permissions, contact discord admin to fix that issue.`).then(message => { message.delete({ timeout: 10000 }) });
-    }
-
-    else if (!botPermission('MANAGE_NICKNAMES')) {
-        errorLog(`apply.js:5 Not enough permissions for the application system [MANAGE_NICKNAMES].`, undefined)
-        return message.reply(`Missing ${bot.user} bot permissions, contact discord admin to fix that issue.`).then(message => { message.delete({ timeout: 10000 }) });
-    }
+    if (!appChannel || !appStorageChannel || !appProcessChannel) return botReply(embedMessage(`❌ Wrong server configuration 🔧\nPlease, contact <@&${config.roles.discordManagerRoleID}> to fix this issue!`), message, 10000, true, false, false);
 
     //////////////////////////////////////////////////////////////////////////////////////////////
 
-    const filter = m => m.author.id === message.author.id;
+    if (message.channel.id != config.application.processChannelID) // Block the command outside application channel.
+        return botReply(embedMessage(`You can only apply on the <#${config.application.processChannelID}> channel!`, message.author), message, 10000, true);
 
-    return message.reply("Before we proceed forward, make sure you have the values for these stats.\n**Note:** Contact the discord manager if you are experiencing any errors with the command.\n\nWhat do you need?\n```less\n[1] Trove Mastery Points (exact number from the leaderboard)\n[2] Geode Mastery Points (exact number from the leaderboard)\n[3] Highest Class Power Rank (exact number)\n[4] Screenshot with visible character sheet (C)```Example: https://skillez.eu/images/discord/app.png\n\nWe strongly recommend to use **Enhanced UI Mod** which is available on Trovesaurus and Steam Workshop.\n\nIf you're ready, then type **ready** or __anything else__ to abandon this application.")
-        .then(ReadyQuestion => {
-            message.channel.awaitMessages(filter, { max: 1, time: 180000 })
-                .then(ReadyAnswer => {
-                    ReadyQuestion.delete().catch(() => { return }); // remove bot ready check after answer
-                    if (ReadyAnswer.first().content.startsWith(config.BotPrefix)) return; // stop the application if other command was typed
+    else if (message.member.roles.cache.some(role => role.id === config.roles.guestRoleID)) // Questions to guests
+        return guestQuestion();
 
-                    if (ReadyAnswer.first().content.toLowerCase() === 'ready') {
-                        removeUserLastMessage(message.author); // remove after user typed ready
-                        return setTimeout(() => {
-                            Question1();
-                        }, 1000);
+    else if (message.member.roles.cache.some(role => role.id === config.roles.memberRoleID)) // If applicant has member role
+        return botReply(embedMessage(`Hello!\nIt seems that you are an ex-member of the club.\nIf you would like to rejoin, please contact any of our club's staffs.\n\n• <@&${config.roles.captainRoleID}>\n• <@&${config.roles.managerRoleID}>\n• <@&${config.roles.viceRoleID}>\n• <@&${config.roles.senpaiRoleID}>`, message.author), message, 30000, true);
 
-                    } else { // if something else than ready was typed
-                        removeUserLastMessage(message.author); // something else was typed than ready and user message is removed
+    else if (message.member.roles.cache.some(role => role.id === config.application.restrictionRoleID)) // If applicant is banned aka has restriction role
+        return botReply(embedMessage(`You are banned from using this command.`, message.author), message, 20000, true);
 
-                        return message.channel.send(`${message.author} ❌ Cancelling...`)
-                            .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message - ready check
+    else initialQuestion(); // runs the first question
+
+    //////////////////////////////////////////////////////////////////////////////////////////////
+
+    function initialQuestion() {
+        return botReply("Before we proceed forward, make sure you have the values for these stats.\n**Note:** Contact the discord manager if you are experiencing any errors with the command.\n\nWhat do you need?\n```less\n[1] Trove Mastery Points (exact number from the leaderboard)\n[2] Geode Mastery Points (exact number from the leaderboard)\n[3] Highest Class Power Rank (exact number)\n[4] Screenshot with visible character sheet (C) [example below]```\nWe strongly recommend to use **Enhanced UI Mod** which is available on Trovesaurus and Steam Workshop.\n\nIf you're ready, then type **ready** or __anything else__ to abandon this application.\nYou can also type **exit** to cancel the application at any time.", message, 0, false, null, './images/application/application.png')
+            .then(Question => {
+                if (Question) { // check if the bot sent question to the user, if so, collect one reply from the message.author.
+                    message.channel.awaitMessages(m => m.author.id === message.author.id, { max: 1, time: responseTime })
+                        .then(Answer => {
+                            Question.delete().catch(error => console.error(`apply.js:1 initialQuestion() Error to delate the message`, error)); // delete question if user answered
+                            if (Answer.first().content.startsWith(config.botPrefix)) return; // stop the application if other command was typed
+
+                            switch (Answer.first().content.toLowerCase()) {
+                                case 'ready': {
+                                    removeUserLastMessage(message.author); // remove user answer
+                                    return setTimeout(() => { nicknameQuestion() }, 1000); // go to the nickname question
+                                }
+
+                                default: {
+                                    removeUserLastMessage(message.author); // remove user answer
+                                    return setTimeout(() => { botReply(embedMessage('❌ Cancelling...', message.author), message, 5000, true); }, 1000);
+                                }
+                            }
+                        }).catch(error => {
+                            if (error.message === "Cannot read property 'content' of undefined") return botReply(`❌ There was no message within the time limit (${Math.round(responseTime / 60000)}mins)! - Cancelled.`, message, 30000, true);
+                            else return;
+                        });
+                } else return;
+            })
+            .catch(error => {
+                botReply(`❌ An unknown error occured, please contact discord manager to fix this issue!`, message, 20000, true);
+                errorLog(`apply.js:2 initialQuestion() Error`, error);
+            });
+    }
+
+    function guestQuestion() {
+        return botReply(embedMessage(`Did you read <#${config.channels.informationChannelID}> channel and you aware of our guidelines/rules?`, message.author), message, 0, false)
+            .then(async Question => {
+
+                if (Question) { // check if the bot sent question to the user, if so, collect one reply from the message.author.
+                    const emojiFilter = (reaction, user) => { // accept interaction only from the message author
+                        return ['✅', '❌'].includes(reaction.emoji.name) && !user.bot && message.author === user;
                     }
 
-                }).catch(error => {
-                    if (error.message === "Cannot read property 'content' of undefined") return message.channel.send(`${message.author} ❌ There was no message within the time limit (3mins)! - cancelling...`)
-                        .then(message => message.delete({ timeout: 30000 })).catch(() => { return }); // remove bot info about time ran out
+                    Question.awaitReactions(emojiFilter, { max: 1, time: responseTime })
+                        .then(collected => {
+                            const reaction = collected.first();
+                            Question.delete().catch(error => console.error(`apply.js:1 guestQuestion() Error to delate the message`, error)); // Delete bot's question
 
-                    removeUserLastMessage(message.author); // remove after user typed answer
-                    errorLog(`apply.js:1 Ready Check Question\nError when user answer the ready check question.`, error);
-                });
-        });
+                            switch (reaction.emoji.name) {
+                                case '✅': return setTimeout(() => { botReply(`Why do you have a guest role then? 🤔\nGo to the <#${config.channels.informationChannelID}> channel, read how to get rid of this role and try again.`, message, 20000, true); }, 1000);
+                                case '❌': return setTimeout(() => { botReply(`Well, at least you are honest with us 👌\nPlease go to the <#${config.channels.informationChannelID}> channel, read how to remove a guest role from your account and try again ;)`, message, 20000, true); }, 1000);
+                                default: return;
+                            }
+                        })
+                        .catch(error => {
+                            if (error.message === "Cannot read property 'emoji' of undefined") return botReply(`❌ There was no reaction within the time limit (${Math.round(responseTime / 60000)}mins)! - Cancelled.`, message, 30000, true);
+                            errorLog(`apply.js:2 guestQuestion() Error when user answer the question.`, error);
+                        });
 
-    /////////////////////////////////////////////////////////////////////////////////////////
-
-    function GuestQuestion1() { // Ask if applicant read information channel
-        const filter = m => m.author.id === message.author.id;
-        return message.reply(`Did you read <#${config.InformationChannelID}> channel and you aware of our guidelines/rules? (Yes/No)\n(or type cancel to stop)`)
-            .then(Question => {
-                message.channel.awaitMessages(filter, { max: 1, time: 180000 })
-                    .then(Answer => {
-                        Question.delete().catch(() => { return }); // remove bot question after answer is sent
-                        if (Answer.first().content.startsWith(config.BotPrefix)) return; // stop the application if other command was typed
-
-                        if (Answer.first().content.toLowerCase() === 'exit' || Answer.first().content.toLowerCase() === 'cancel') { // if user want to stop
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ Cancelling...`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message - ready check
-                        }
-
-                        if (!Answer.first().content) { // if answer has no message content aka attachment added or some shit like that.
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Your answer is too short.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        if (Answer.first().content.toLowerCase() === 'yes' || Answer.first().content.toLowerCase() === 'y' || Answer.first().content.toLowerCase() === 'ye') {
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`❌ ${message.author}, Why do you have a guest role then? 🤔\nGo to the <#${config.InformationChannelID}> channel and read how to get rid of this role and try again.`)
-                                .then(message => message.delete({ timeout: 15000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        if (Answer.first().content.toLowerCase() === 'no' || Answer.first().content.toLowerCase() === 'n' || Answer.first().content.toLowerCase() === 'nah') {
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`❌ ${message.author}, Well, at least you are honest with us, but please go to the <#${config.InformationChannelID}> channel read how to remove a guest role from your account and try again ;)`)
-                                .then(message => message.delete({ timeout: 15000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        if (Answer.first().content.toLowerCase() === 'idc') {
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`✅ Excellent answer ${message.author}!\nYou have been promoted to an **officer**!`)
-                                .then(message => message.delete({ timeout: 10000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-                    }).catch(error => {
-                        if (error.message === "Cannot read property 'content' of undefined") return message.channel.send(`${message.author} ❌ There was no message within the time limit (3mins)! - cancelling...`)
-                            .then(message => message.delete({ timeout: 30000 })).catch(() => { return }); // remove bot info about time ran out
-
-                        removeUserLastMessage(message.author); // remove after user typed answer
-                        errorLog(`apply.js:1 GuestQuestion1()\nError when user answer the question.`, error);
-                    });
+                    try {
+                        await Question.react('✅');
+                        await Question.react('❌');
+                    } catch (error) {
+                        if (error.message === 'Unknown Message') return;
+                        botReply(`An unknown error occured ;(`, message, 10000, true);
+                        errorLog(`apply.js:2 guestQuestion() Error to add reactions probably wrong emojis or missing permission.`, error);
+                    }
+                }
+            }).catch(error => {
+                botReply(`❌ An unknown error occured, please contact discord manager to fix this issue!`, message, 20000, true);
+                errorLog(`apply.js:3 guestQuestion() Error`, error);
             });
     }
 
-    function Question1() { // In-game nick question
-        return message.channel.send(`Alright, ${message.author} let's start with something easy, what is your **in-game name**?\n(or type cancel to stop)`)
+    function nicknameQuestion(additionalText) {
+        if (!additionalText) additionalText = '';
+        else additionalText = additionalText + '\n(you can type **exit** to cancel app)\n';
+        return botReply(`${additionalText}\n> Alright let's start with something easy. **What's your in-game name?**`, message, 0, false, null, './images/application/nickname.png')
             .then(Question => {
-                message.channel.awaitMessages(filter, { max: 1, time: 180000 })
-                    .then(Answer => {
-                        Question.delete().catch(() => { return }); // remove bot question after answer is sent
-                        if (Answer.first().content.startsWith(config.BotPrefix)) return; // stop the application if other command was typed
+                if (Question) { // check if the bot sent question to the user, if so, collect one reply from the message.author.
+                    message.channel.awaitMessages(m => m.author.id === message.author.id, { max: 1, time: responseTime })
+                        .then(Answer => {
+                            Question.delete().catch(error => console.error(`apply.js:1 nicknameQuestion() Error to delate the message`, error)); // delete question if user answered
+                            if (Answer.first().content.startsWith(config.botPrefix)) return; // stop the application if other command was typed
 
-                        if (Answer.first().content.toLowerCase() === 'exit' || Answer.first().content.toLowerCase() === 'cancel') { // if user want to stop
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ Cancelling...`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message - ready check
-                        }
+                            if (Answer.first().content.length < 3 || Answer.first().content.length > 20) { // Check nickname length
+                                removeUserLastMessage(message.author); // remove user answer
+                                return nicknameQuestion(`❌ Your nickname is either too short or too long.`);
+                            }
 
-                        if (Answer.first().content.length < 3) { // if answer is shorter than 3 characters
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Nickname is too short.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
-                        }
+                            switch (Answer.first().content.toLowerCase()) {
+                                case 'exit': case 'cancel': {
+                                    removeUserLastMessage(message.author); // remove user answer
+                                    return setTimeout(() => { return botReply(embedMessage('❌ Cancelling...', message.author), message, 5000, true); }, 1000);
+                                }
 
-                        if (Answer.first().content.length > 20) { // if answer is longer than 20 characters
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Nickname is too long.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        removeUserLastMessage(message.author); // remove after user typed answer
-                        // let nickName = Answer.first().content;
-                        return setTimeout(() => {
-                            // return Question2(Answer.first().content);
-                            referralQuestion1(Answer.first().content, message.author);
-                        }, 1000);
-
-                    }).catch(error => {
-                        if (error.message === "Cannot read property 'content' of undefined") return message.channel.send(`${message.author} ❌ There was no message within the time limit (3mins)! - cancelling...`)
-                            .then(message => message.delete({ timeout: 30000 })).catch(() => { return }); // remove bot info about time ran out
-
-                        removeUserLastMessage(message.author); // remove after user typed answer
-                        errorLog(`apply.js:1 Question1()\nError when user answer the question.`, error);
-                    });
+                                default: {
+                                    applicantNickname = Answer.first().content;
+                                    removeUserLastMessage(message.author); // remove user answer
+                                    return setTimeout(() => { return referralQuestion(); }, 1000); // go to the referral question
+                                }
+                            }
+                        }).catch(error => {
+                            if (error.message === "Cannot read property 'content' of undefined") return botReply(`❌ There was no message within the time limit (${Math.round(responseTime / 60000)}mins)! - Cancelled.`, message, 30000, true);
+                            else return;
+                        });
+                } else return;
+            })
+            .catch(error => {
+                botReply(`❌ An unknown error occured, please contact discord manager to fix this issue!`, message, 20000, true);
+                errorLog(`apply.js:2 nicknameQuestion() Error`, error);
             });
     }
 
-    function referralQuestion1(nickName, applicationAuthor) {
-        return message.reply(`Have you been referred by our staff(enforcer+)?`)
+    function referralQuestion(additionalText) {
+        if (!additionalText) additionalText = '';
+        else additionalText = additionalText + '\n';
+        return botReply(`${additionalText}\n> **Have you been referred by our staff(enforcer+)?**`, message, 0, false)
             .then(async Question => {
-                try {
-                    await Question.react('✅');
-                    await Question.react('❌');
-                } catch (error) {
-                    message.channel.send(`An unknown error occured ;(`)
-                        .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
-                    errorLog(`apply.js:1 referralQuestion1()\nError to add reactions probably wrong emojis.`, error)
+
+                if (Question) { // check if the bot sent question to the user, if so, collect one reply from the message.author.
+                    const emojiFilter = (reaction, user) => { // accept interaction only from the message author
+                        return ['✅', '❌'].includes(reaction.emoji.name) && !user.bot && message.author === user;
+                    }
+
+                    Question.awaitReactions(emojiFilter, { max: 1, time: responseTime })
+                        .then(collected => {
+                            const reaction = collected.first();
+                            Question.delete().catch(error => console.error(`apply.js:1 referralQuestion() Error to delate the message`, error)); // Delete bot's question
+
+                            switch (reaction.emoji.name) {
+                                case '✅': return setTimeout(() => { referralMentionQuestion(); }, 1000); // go to the referral mention question
+                                case '❌': return setTimeout(() => { troveMasteryQuestion() }, 1000); // go to the trove mastery question
+                                default: return;
+                            }
+                        })
+                        .catch(error => {
+                            if (error.message === "Cannot read property 'emoji' of undefined") return botReply(`❌ There was no reaction within the time limit (${Math.round(responseTime / 60000)}mins)! - Cancelled.`, message, 30000, true);
+                            errorLog(`apply.js:2 referralQuestion() Error when user answer the question.`, error);
+                        });
+
+                    try {
+                        await Question.react('✅');
+                        await Question.react('❌');
+                    } catch (error) {
+                        if (error.message === 'Unknown Message') return;
+                        botReply(`An unknown error occured ;(`, message, 10000, true);
+                        errorLog(`apply.js:4 referralQuestion() Error to add reactions probably wrong emojis or missing permission.`, error);
+                    }
                 }
-
-                const emojiFilter = (reaction, user) => {
-                    return ['✅', '❌'].includes(reaction.emoji.name) && !user.bot && applicationAuthor === user;
-                }
-
-                Question.awaitReactions(emojiFilter, { max: 1, time: 180000 })
-                    .then(collected => {
-                        const reaction = collected.first();
-
-                        if (reaction.emoji.name === '✅') {
-                            return Question.delete().catch(() => { return })
-                                .then(() => {
-                                    return setTimeout(() => {
-                                        // console.log(`${applicationAuthor.tag} reacted with ✅`);
-                                        referralQuestion2(nickName);
-                                    }, 1000);
-                                })
-                        }
-
-                        if (reaction.emoji.name === '❌') {
-                            return Question.delete().catch(() => { return })
-                                .then(() => {
-                                    return setTimeout(() => {
-                                        // console.log(`${applicationAuthor.tag} reacted with ❌`);
-                                        Question2('None', nickName);
-                                    }, 1000);
-                                })
-                        }
-                    })
-                    .catch(error => {
-                        if (error.message === "Cannot read property 'emoji' of undefined") return message.channel.send(`${message.author} ❌ There was no reaction within the time limit (3mins)! - cancelling...`)
-                            .then(message => {
-                                message.delete({ timeout: 30000 }).catch(() => { return });
-                                Question.delete().catch(() => { return });
-                            }); // remove bot info about time ran out
-
-                        removeUserLastMessage(message.author); // remove after user typed answer
-                        errorLog(`apply.js:2 previewConfirmation()\nError when user answer the question.`, error);
-                    });
+            }).catch(error => {
+                botReply(`❌ An unknown error occured, please contact discord manager to fix this issue!`, message, 20000, true);
+                errorLog(`apply.js:5 referralQuestion() Error`, error);
             });
+
     }
 
-    function referralQuestion2(nickName) {
-        return message.reply(`Please mention enforcer+ that referred you.\n(or type cancel to stop)`)
+    function referralMentionQuestion(additionalText) {
+        if (!additionalText) additionalText = '';
+        else additionalText = additionalText + '\n'
+        return botReply(`${additionalText}\n> **Please mention enforcer+ that referred you.**`, message, 0, false, false, './images/application/mention.gif')
             .then(Question => {
-                message.channel.awaitMessages(filter, { max: 1, time: 180000 })
-                    .then(Answer => {
-                        Question.delete().catch(() => { return }); // remove bot question after answer is sent
-                        if (Answer.first().content.startsWith(config.BotPrefix)) return; // stop the application if other command was typed
+                if (Question) { // check if the bot sent question to the user, if so, collect one reply from the message.author.
+                    message.channel.awaitMessages(m => m.author.id === message.author.id, { max: 1, time: responseTime })
+                        .then(Answer => {
+                            Question.delete().catch(error => console.error(`apply.js:1 referralMentionQuestion() Error to delate the message`, error)); // delete question if user answered
+                            if (Answer.first().content.startsWith(config.botPrefix)) return; // stop the application if other command was typed
 
-                        if (Answer.first().content.toLowerCase() === 'exit' || Answer.first().content.toLowerCase() === 'cancel') { // if user want to stop
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ Cancelling...`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message - ready check
-                        }
+                            if (Answer.first().content.toLowerCase() === 'exit' || Answer.first().content.toLowerCase() === 'cancel') {
+                                removeUserLastMessage(message.author); // remove user answer
+                                return setTimeout(() => { return botReply(embedMessage('❌ Cancelling...', message.author), message, 5000, true); }, 1000);
+                            } else if (Answer.first().content.startsWith('<@') && Answer.first().content.endsWith('>')) {
 
-                        if (Answer.first().content.startsWith('<@') && Answer.first().content.endsWith('>')) {
-                            const ReplaceMentionToID = Answer.first().content.replace(/[\\<>@#&!]/g, ""); // replace mention to an ID
+                                const ReplaceMentionToID = Answer.first().content.replace(/[\\<>@#&!]/g, ""); // replace mention to an ID
+                                const referralGuildMember = message.guild.members.cache.get(ReplaceMentionToID); // check cache to find the mentioned user
 
-                            const referralGuildMember = message.guild.members.cache.get(ReplaceMentionToID);
-                            if (referralGuildMember) {
+                                if (referralGuildMember) { // check if mention is valid
 
-                                if (referralGuildMember.roles.cache.some(role => role.id === config.SenpaiRoleID)
-                                    || referralGuildMember.roles.cache.some(role => role.id === config.ViceRoleID)
-                                    || referralGuildMember.roles.cache.some(role => role.id === config.ManagerRoleID)
-                                    || referralGuildMember.roles.cache.some(role => role.id === config.EnforcerRoleID)) {
-                                    removeUserLastMessage(message.author); // remove after user typed answer
-                                    return setTimeout(() => {
-                                        // console.log(`referralQuestion2 finished\nReferred: ${referralGuildMember.user.tag} and has Senpai/Vice/Manager or Enforcer role.`);
-                                        Question2(referralGuildMember.user, nickName);
-                                    }, 1000);
+                                    if (referralGuildMember.roles.cache.some(role => role.id === config.roles.senpaiRoleID)
+                                        || referralGuildMember.roles.cache.some(role => role.id === config.roles.viceRoleID)
+                                        || referralGuildMember.roles.cache.some(role => role.id === config.roles.managerRoleID)
+                                        || referralGuildMember.roles.cache.some(role => role.id === config.roles.enforcerRoleID)) {
+                                        refferalMention = referralGuildMember.user;
+                                        removeUserLastMessage(message.author); // remove after user typed answer
+                                        return setTimeout(() => { return troveMasteryQuestion(); }, 1000); // go to the trove points question
+
+                                    } else {
+                                        removeUserLastMessage(message.author); // remove after user typed answer
+                                        return referralQuestion('❌ Your referral is not enforcer+.');
+                                    }
                                 } else {
                                     removeUserLastMessage(message.author); // remove after user typed answer
-                                    return message.channel.send(`${message.author} ❌ The application has been cancelled - Your referral is not enforcer+.`)
-                                        .then(message => message.delete({ timeout: 5000 })).catch(() => { return }) // remove bot exit request message.
+                                    return referralQuestion('❌ Your referral is invalid.');
                                 }
                             } else {
-                                removeUserLastMessage(message.author); // remove after user typed answer
-                                return message.channel.send(`${message.author} ❌ The application has been cancelled - Invalid referral.`)
-                                    .then(message => message.delete({ timeout: 5000 })).catch(() => { return }) // remove bot exit request message.
+                                removeUserLastMessage(message.author); // remove user answer
+                                return referralQuestion(`❌ You didn't mention referral.`);
                             }
-                        } else {
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - You didn't mention referral.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }) // remove bot exit request message.
-                            // .then(referralQuestion2(nickName));
-                        }
 
-                    }).catch(error => {
-                        if (error.message === "Cannot read property 'content' of undefined") return message.channel.send(`${message.author} ❌ There was no message within the time limit (3mins)! - cancelling...`)
-                            .then(message => message.delete({ timeout: 30000 })).catch(() => { return }); // remove bot info about time ran out
-
-                        removeUserLastMessage(message.author); // remove after user typed answer
-                        errorLog(`apply.js:1 Question1()\nError when user answer the question.`, error);
-                    });
-            });
-    }
-
-    function Question2(appReferral, nickName) { // Trove mastery points question
-        return message.reply(`Hey ${nickName}, what is your **TROVE Mastery Points**?\n(or type cancel to stop)`)
-            .then(Question => {
-                message.channel.awaitMessages(filter, { max: 1, time: 180000 })
-                    .then(Answer => {
-                        Question.delete().catch(() => { return }); // remove bot question after answer is sent
-                        if (Answer.first().content.startsWith(config.BotPrefix)) return; // stop the application if other command was typed
-
-                        if (Answer.first().content.toLowerCase() === 'exit' || Answer.first().content.toLowerCase() === 'cancel') { // if user want to stop
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ Cancelling...`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message - ready check
-                        }
-
-                        if (!Answer.first().content) { // if answer has no message content aka attachment added or some shit like that.
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Your answer is too short.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        let replace2Number = Answer.first().content.replace(/[., ]/g, ""); // replace answer to number
-                        if (isNaN(replace2Number) === true) { // if answer is not a number
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Your answer is not a number.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        if (replace2Number > 150000) { // Check TROVE mastery points - upper limit 150,000 points
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Your Trove Mastery Points are too high.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        removeUserLastMessage(message.author); // remove after user typed answer
-                        return setTimeout(() => {
-                            Question3(appReferral, nickName, Number(replace2Number));
-                        }, 1000);
-
-                    }).catch(error => {
-                        if (error.message === "Cannot read property 'content' of undefined") return message.channel.send(`${message.author} ❌ There was no message within the time limit (3mins)! - cancelling...`)
-                            .then(message => message.delete({ timeout: 30000 })).catch(() => { return }); // remove bot info about time ran out
-
-                        removeUserLastMessage(message.author); // remove after user typed answer
-                        errorLog(`apply.js:1 Question2()\nError when user answer the question.`, error);
-                    });
-            });
-    }
-
-    function Question3(appReferral, nickName, trovePoints) { // Geode mastery points question
-        return message.reply(`What is your **GEODE Mastery Points**?\n(or type cancel to stop)`)
-            .then(Question => {
-                message.channel.awaitMessages(filter, { max: 1, time: 180000 })
-                    .then(Answer => {
-                        Question.delete().catch(() => { return }); // remove bot question after answer is sent
-                        if (Answer.first().content.startsWith(config.BotPrefix)) return; // stop the application if other command was typed
-
-                        if (Answer.first().content.toLowerCase() === 'exit' || Answer.first().content.toLowerCase() === 'cancel') { // if user want to stop
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ Cancelling...`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message - ready check
-                        }
-
-                        if (!Answer.first().content) { // if answer has no message content aka attachment added or some shit like that.
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Your answer is too short.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        let replace2Number = Answer.first().content.replace(/[., ]/g, ""); // replace answer to number
-                        if (isNaN(replace2Number) === true) { // if answer is not a number
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Your answer is not a number.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        if (replace2Number > 20000) { // Check GEODE mastery points - upper limit - 20,000 points
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Your Geode Mastery Points are too high.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        removeUserLastMessage(message.author); // remove after user typed answer
-                        return setTimeout(() => {
-                            Question4(appReferral, nickName, trovePoints, Number(replace2Number));
-                        }, 1000);
-
-                    }).catch(error => {
-                        if (error.message === "Cannot read property 'content' of undefined") return message.channel.send(`${message.author} ❌ There was no message within the time limit (3mins)! - cancelling...`)
-                            .then(message => message.delete({ timeout: 30000 })).catch(() => { return }); // remove bot info about time ran out
-
-                        removeUserLastMessage(message.author); // remove after user typed answer
-                        errorLog(`apply.js:1 Question3()\nError when user answer the question.`, error);
-                    });
-            });
-    }
-
-    function Question4(appReferral, nickName, trovePoints, geodePoints) { // Power rank question
-        return message.reply(`What is your **highest Power Rank**?\n(or type cancel to stop)`)
-            .then(Question => {
-                message.channel.awaitMessages(filter, { max: 1, time: 180000 })
-                    .then(Answer => {
-                        Question.delete().catch(() => { return }); // remove bot question after answer is sent
-                        if (Answer.first().content.startsWith(config.BotPrefix)) return; // stop the application if other command was typed
-
-                        if (Answer.first().content.toLowerCase() === 'exit' || Answer.first().content.toLowerCase() === 'cancel') { // if user want to stop
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ Cancelling...`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message - ready check
-                        }
-
-                        if (!Answer.first().content) { // if answer has no message content aka attachment added or some shit like that.
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Your answer is too short.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        let replace2Number = Answer.first().content.replace(/[., ]/g, ""); // replace answer to number
-                        if (isNaN(replace2Number) === true) { //if answer is not a number
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Your answer is not a number.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        if (replace2Number > 45000) { // Check Power Rank - upper limit - 45,000 points
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Your highest Power Rank is too high.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        removeUserLastMessage(message.author); // remove after user typed answer
-                        return setTimeout(() => {
-                            RequirementsCheck(appReferral, nickName, trovePoints, geodePoints, Number(replace2Number));
-                        }, 1000);
-
-                    }).catch(error => {
-                        if (error.message === "Cannot read property 'content' of undefined") return message.channel.send(`${message.author} ❌ There was no message within the time limit (3mins)! - cancelling...`)
-                            .then(message => message.delete({ timeout: 30000 })).catch(() => { return }); // remove bot info about time ran out
-
-                        removeUserLastMessage(message.author); // remove after user typed answer
-                        errorLog(`apply.js:1 Question4()\nError when user answer the question.`, error);
-                    });
-            });
-    }
-
-    function RequirementsCheck(appReferral, nickName, trovePoints, geodePoints, powerRank) { // Check if applicant meet club requirements
-        let masteryBottom = '';
-        let geodeBottom = '';
-        let powerrankBottom = '';
-
-        if (powerRank >= config.requirements.powerRank) { // Check Power Rank - bottom limit - 30,000 points
-            return setTimeout(() => {
-                Question5(appReferral, nickName, trovePoints, geodePoints, powerRank);
-            }, 1000);
-        } else {
-            powerrankBottom = 'Your **highest Power Rank** is below our requirements.\n';
-
-            if (trovePoints >= config.requirements.trovePoints && geodePoints >= config.requirements.geodePoints) { // Check TROVE mastery points above 69200 points (500 mastery) and GEODE points above 4,100 (50 mastery)
-                return setTimeout(() => {
-                    Question5(appReferral, nickName, trovePoints, geodePoints, powerRank);
-                }, 1000);
-            } else {
-                if (trovePoints < config.requirements.trovePoints) masteryBottom = '**Trove Mastery Points** are below our requirements.\n';
-                if (geodePoints < config.requirements.geodePoints) geodeBottom = '**Geode Mastery Points** are below our requirements.';
-            }
-        }
-
-        if (masteryBottom || geodeBottom || powerrankBottom) {
-            return message.channel.send(`${message.author} ❌ The application has been cancelled:\n\n${masteryBottom}${geodeBottom}${powerrankBottom}`)
-                .then(message => message.delete({ timeout: 10000 })).catch(() => { return }); // remove bot exit request message.
-        }
-    }
-
-    function Question5(appReferral, nickName, trovePoints, geodePoints, powerRank) { // Other clubs question
-        return message.reply("What other clubs are you associated with? [max 100 characters]\n(or type cancel to stop)")
-            .then(Question => {
-                message.channel.awaitMessages(filter, { max: 1, time: 180000 })
-                    .then(Answer => {
-                        Question.delete().catch(() => { return }); // remove bot question after answer is sent
-                        if (Answer.first().content.startsWith(config.BotPrefix)) return; // stop the application if other command was typed
-
-                        if (Answer.first().content.toLowerCase() === 'exit' || Answer.first().content.toLowerCase() === 'cancel') { // if user want to stop
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ Cancelling...`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message - ready check
-                        }
-
-                        if (!Answer.first().content) { // if answer has no message content aka attachment added or some shit like that.
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Your answer is too short.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        if (Answer.first().content.length > 100) { // if answer is longer than 100 characters
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Your answer is too long.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        removeUserLastMessage(message.author); // remove after user typed answer
-                        return setTimeout(() => {
-                            Question6(appReferral, nickName, trovePoints, geodePoints, powerRank, Answer.first().content);
-                        }, 1000);
-
-                    }).catch(error => {
-                        if (error.message === "Cannot read property 'content' of undefined") return message.channel.send(`${message.author} ❌ There was no message within the time limit (3mins)! - cancelling...`)
-                            .then(message => message.delete({ timeout: 30000 })).catch(() => { return }); // remove bot info about time ran out
-
-                        removeUserLastMessage(message.author); // remove after user typed answer
-                        errorLog(`apply.js:1 Question5()\nError when user answer the question.`, error);
-                    });
-            });
-    }
-
-    function Question6(appReferral, nickName, trovePoints, geodePoints, powerRank, otherClubs) { // Upload character sheet screenshot
-        return message.reply("Please upload a screenshot of the character sheet now.\nMake sure your file is saved as one of the following extensions: **PNG**, **JPG**, **GIF**, **JPEG**\nExample as shown: https://skillez.eu/images/discord/app.png\n(or type anything to stop)")
-            .then(Question => {
-                message.channel.awaitMessages(filter, { max: 1, time: 180000 })
-                    .then(Answer => {
-                        Question.delete().catch(() => { return }); // remove bot question after answer is sent
-                        if (Answer.first().content.startsWith(config.BotPrefix)) return; // stop the application if other command was typed
-
-                        if (!Answer.first().attachments.array()[0]) { // if there is not attachment
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - Attachment not found.`)
-                                .then(message => message.delete({ timeout: 5000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                        const appImageUrl = Answer.first().attachments.array()[0].url;
-                        if (appImageUrl.toLocaleLowerCase().endsWith('png') || appImageUrl.toLocaleLowerCase().endsWith('jpg') || appImageUrl.toLocaleLowerCase().endsWith('gif') || appImageUrl.toLocaleLowerCase().endsWith('jpeg')) {
-                            const applicantUploadMessage = Answer.first();
-                            return setTimeout(() => {
-                                appPreview(appReferral, nickName, trovePoints, geodePoints, powerRank, otherClubs, appImageUrl, applicantUploadMessage);
-                            }, 1000);
-                        } else {
-                            removeUserLastMessage(message.author); // remove after user typed answer
-                            return message.channel.send(`${message.author} ❌ The application has been cancelled - wrong image format, allowed files: png, jpg, gif or jpeg.`)
-                                .then(message => message.delete({ timeout: 10000 })).catch(() => { return }); // remove bot exit request message.
-                        }
-
-                    }).catch(error => {
-                        if (error.message === "Cannot read property 'content' of undefined") return message.channel.send(`${message.author} ❌ There was no message within the time limit (3mins)! - cancelling...`)
-                            .then(message => message.delete({ timeout: 30000 })).catch(() => { return }); // remove bot info about time ran out
-
-                        removeUserLastMessage(message.author); // remove after user typed answer
-                        errorLog(`apply.js:1 Question6()\nError when user answer the question.`, error);
-                    });
-            });
-    }
-
-    async function appPreview(appReferral, nickName, trovePoints, geodePoints, powerRank, otherClubs, appImageUrl, appImageMessage) { // Application preview
-        // Create the attachment using MessageAttachment
-        const attachment = new Discord.MessageAttachment(appImageUrl);
-
-        let appStorageMessage = await appStorageChannel.send(`${message.author.id} | An image storage request for the ${message.author}'s application.`, attachment)
+                        }).catch(error => {
+                            if (error.message === "Cannot read property 'content' of undefined") return botReply(`❌ There was no message within the time limit (${Math.round(responseTime / 60000)}mins)! - Cancelled.`, message, 30000, true);
+                            else return;
+                        });
+                } else return;
+            })
             .catch(error => {
-                message.channel.send(`An unknown error occured ;(`)
-                    .then(message => message.delete({ timeout: 5000 })).catch(() => { return });
-                appImageMessage.delete({ timeout: 500 }).catch(() => { return });
-                errorLog(`apply.js:1 appPreview()\nError to send message in a storage channel.`, error);
+                botReply(`❌ An unknown error occured, please contact discord manager to fix this issue!`, message, 20000, true);
+                errorLog(`apply.js:2 referralMentionQuestion() Error`, error);
+            });
+    }
+
+    function troveMasteryQuestion(additionalText) {
+        if (!additionalText) additionalText = '';
+        else additionalText = additionalText + '\n(you can type **exit** to cancel app)\n';
+        return botReply(`${additionalText}\n> **What's your TROVE Mastery Points?**`, message, 0, false, false, './images/application/trovePoints.png')
+            .then(Question => {
+                if (Question) { // check if the bot sent question to the user, if so, collect one reply from the message.author.
+                    message.channel.awaitMessages(m => m.author.id === message.author.id, { max: 1, time: responseTime })
+                        .then(Answer => {
+                            Question.delete().catch(error => console.error(`apply.js:1 troveMasteryQuestion() Error to delate the message`, error)); // delete question if user answered
+                            if (Answer.first().content.startsWith(config.botPrefix)) return; // stop the application if other command was typed
+
+                            if (Answer.first().content.toLowerCase() === 'exit' || Answer.first().content.toLowerCase() === 'cancel') {
+                                removeUserLastMessage(message.author); // remove user answer
+                                return setTimeout(() => { return botReply(embedMessage('❌ Cancelling...', message.author), message, 5000, true); }, 1000);
+                            }
+
+                            const replace2Number = Answer.first().content.replace(/[., ]/g, ""); // replace answer to number
+                            if (isNaN(replace2Number) === true || !replace2Number) { // if answer is not a number
+                                removeUserLastMessage(message.author); // remove after user typed answer
+                                return troveMasteryQuestion('❌ Your answer is not a number.');
+                            }
+                            else if (replace2Number >= 500000) { // Check TROVE mastery points - upper limit 500,000 points
+                                removeUserLastMessage(message.author); // remove after user typed answer
+                                return troveMasteryQuestion('❌ Your Trove Mastery Points are too high!');
+                            }
+                            else if (replace2Number <= 1000) {
+                                removeUserLastMessage(message.author); // remove after user typed answer
+                                return troveMasteryQuestion('❌ Make sure to type your **POINTS** not a rank.');
+                            }
+                            else {
+                                troveMastery = Number(replace2Number);
+                                removeUserLastMessage(message.author); // remove user answer
+                                return setTimeout(() => { return geodeMasteryQuestion(); }, 1000); // go to the geode points question
+                            }
+
+                        }).catch(error => {
+                            if (error.message === "Cannot read property 'content' of undefined") return botReply(`❌ There was no message within the time limit (${Math.round(responseTime / 60000)}mins)! - Cancelled.`, message, 30000, true);
+                            else return;
+                        });
+                } else return;
+            })
+            .catch(error => {
+                botReply(`❌ An unknown error occured, please contact discord manager to fix this issue!`, message, 20000, true);
+                errorLog(`apply.js:2 troveMasteryQuestion() Error`, error);
+            });
+    }
+
+    function geodeMasteryQuestion(additionalText) {
+        if (!additionalText) additionalText = '';
+        else additionalText = additionalText + '\n(you can type **exit** to cancel app)\n';
+        return botReply(`${additionalText}\n> **What's your GEODE Mastery Points?**`, message, 0, false, false, './images/application/geodePoints.png')
+            .then(Question => {
+                if (Question) { // check if the bot sent question to the user, if so, collect one reply from the message.author.
+                    message.channel.awaitMessages(m => m.author.id === message.author.id, { max: 1, time: responseTime })
+                        .then(Answer => {
+                            Question.delete().catch(error => console.error(`apply.js:1 geodeMasteryQuestion() Error to delate the message`, error)); // delete question if user answered
+                            if (Answer.first().content.startsWith(config.botPrefix)) return; // stop the application if other command was typed
+
+                            if (Answer.first().content.toLowerCase() === 'exit' || Answer.first().content.toLowerCase() === 'cancel') {
+                                removeUserLastMessage(message.author); // remove user answer
+                                return setTimeout(() => { return botReply(embedMessage('❌ Cancelling...', message.author), message, 5000, true); }, 1000);
+                            }
+
+                            const replace2Number = Answer.first().content.replace(/[., ]/g, ""); // replace answer to number
+                            if (isNaN(replace2Number) === true || !replace2Number) { // if answer is not a number
+                                removeUserLastMessage(message.author); // remove after user typed answer
+                                return geodeMasteryQuestion('❌ Your answer is not a number!');
+                            }
+                            else if (replace2Number >= 500000) { // Check GEODE mastery points - upper limit 500,000 points
+                                removeUserLastMessage(message.author); // remove after user typed answer
+                                return geodeMasteryQuestion('❌ Your Geode Mastery Points are too high!');
+                            }
+                            else if (replace2Number <= 100) {
+                                removeUserLastMessage(message.author); // remove after user typed answer
+                                return geodeMasteryQuestion('❌ Make sure sure to type your **POINTS** not a rank.');
+                            }
+                            else {
+                                geodeMastery = Number(replace2Number);
+                                removeUserLastMessage(message.author); // remove user answer
+                                return setTimeout(() => { return powerRankQuestion(); }, 1000); // go to the power rank question
+                            }
+
+                        }).catch(error => {
+                            if (error.message === "Cannot read property 'content' of undefined") return botReply(`❌ There was no message within the time limit (${Math.round(responseTime / 60000)}mins)! - Cancelled.`, message, 30000, true);
+                            else return;
+                        });
+                } else return;
+            })
+            .catch(error => {
+                botReply(`❌ An unknown error occured, please contact discord manager to fix this issue!`, message, 20000, true);
+                errorLog(`apply.js:2 geodeMasteryQuestion() Error`, error);
+            });
+    }
+
+    function powerRankQuestion(additionalText) {
+        if (!additionalText) additionalText = '';
+        else additionalText = additionalText + '\n(you can type **exit** to cancel app)\n';
+        return botReply(`${additionalText}\n> **What's your highest Power Rank?**`, message, 0, false, false, './images/application/powerRank.png')
+            .then(Question => {
+                if (Question) { // check if the bot sent question to the user, if so, collect one reply from the message.author.
+                    message.channel.awaitMessages(m => m.author.id === message.author.id, { max: 1, time: responseTime })
+                        .then(Answer => {
+                            Question.delete().catch(error => console.error(`apply.js:1 powerRankQuestion() Error to delate the message`, error)); // delete question if user answered
+                            if (Answer.first().content.startsWith(config.botPrefix)) return; // stop the application if other command was typed
+
+                            if (Answer.first().content.toLowerCase() === 'exit' || Answer.first().content.toLowerCase() === 'cancel') {
+                                removeUserLastMessage(message.author); // remove user answer
+                                return setTimeout(() => { return botReply(embedMessage('❌ Cancelling...', message.author), message, 5000, true); }, 1000);
+                            }
+
+                            const replace2Number = Answer.first().content.replace(/[., ]/g, ""); // replace answer to number
+                            if (isNaN(replace2Number) === true || !replace2Number) { // if answer is not a number
+                                removeUserLastMessage(message.author); // remove after user typed answer
+                                return powerRankQuestion('❌ Your answer is not a number.');
+                            }
+                            else if (replace2Number >= 99999) { // Check power rank - upper limit 99,999 points
+                                removeUserLastMessage(message.author); // remove after user typed answer
+                                return powerRankQuestion('❌ Your Power Rank is too high!');
+                            }
+                            else if (replace2Number <= 100) {
+                                removeUserLastMessage(message.author); // remove after user typed answer
+                                return powerRankQuestion('❌ Your Power Rank is too low!');
+                            }
+                            else {
+                                powerRank = Number(replace2Number);
+                                removeUserLastMessage(message.author); // remove user answer
+                                return setTimeout(() => { return requirementCheck(); }, 1000); // go to the requirement check function
+                            }
+
+                        }).catch(error => {
+                            if (error.message === "Cannot read property 'content' of undefined") return botReply(`❌ There was no message within the time limit (${Math.round(responseTime / 60000)}mins)! - Cancelled.`, message, 30000, true);
+                            else return;
+                        });
+                } else return;
+            })
+            .catch(error => {
+                botReply(`❌ An unknown error occured, please contact discord manager to fix this issue!`, message, 20000, true);
+                errorLog(`apply.js:2 powerRankQuestion() Error`, error);
+            });
+    }
+
+    function requirementCheck() {
+        let outputStringMessage = '';
+        if (powerRank < config.requirements.powerRank) outputStringMessage = outputStringMessage + `• Your highest **Power Rank**(${powerRank.toLocaleString()}) is below our requirements(${config.requirements.powerRank.toLocaleString()}).\n`;
+        if (troveMastery < config.requirements.trovePoints) outputStringMessage = outputStringMessage + `• **Trove Mastery Points**(${troveMastery.toLocaleString()}) are below our requirements(${config.requirements.trovePoints.toLocaleString()}).\n`;
+        if (geodeMastery < config.requirements.geodePoints) outputStringMessage = outputStringMessage + `• **Geode Mastery Points**(${geodeMastery.toLocaleString()}) are below our requirements(${config.requirements.geodePoints.toLocaleString()}).\n`;
+
+        if (outputStringMessage === '') return otherClubsQuestion(); // go to the other clubs question
+        else return botReply(`**❌ Your application has been canceled**\nThank you for applying to ${getEmoji(message.guild.id, 'laezaria')}Laezaria.\nUnfortunately, your application has been rejected as you do not meet our minimum requirements.\n\n${outputStringMessage}\n Feel free to stay around our discord and reapply once you've met the requirements. We look forward to seeing you soon ${getEmoji(message.guild.id, 'peepoLove')}`, message, 60000, true, false, './images/application/underRequirements.gif');
+    }
+
+    function otherClubsQuestion(additionalText) {
+        if (!additionalText) additionalText = '';
+        else additionalText = additionalText + '\n(you can type **exit** to cancel app)\n';
+        return botReply(`${additionalText}\n> **What other clubs are you associated with?**\n[max 150 characters]`, message, 0, false, null, './images/application/otherClubs.png')
+            .then(Question => {
+                if (Question) { // check if the bot sent question to the user, if so, collect one reply from the message.author.
+                    message.channel.awaitMessages(m => m.author.id === message.author.id, { max: 1, time: responseTime })
+                        .then(Answer => {
+                            Question.delete().catch(error => console.error(`apply.js:1 otherClubsQuestion() Error to delate the message`, error)); // delete question if user answered
+                            if (Answer.first().content.startsWith(config.botPrefix)) return; // stop the application if other command was typed
+
+                            if (Answer.first().content.length < 1 || Answer.first().content.length > 150) { // Check question length
+                                removeUserLastMessage(message.author); // remove user answer
+                                return otherClubsQuestion('❌ Your answer is either too short or too long.');
+                            }
+
+                            switch (Answer.first().content.toLowerCase()) {
+                                case 'exit': case 'cancel': {
+                                    removeUserLastMessage(message.author); // remove user answer
+                                    return setTimeout(() => { return botReply(embedMessage('❌ Cancelling...', message.author), message, 5000, true); }, 1000);
+                                }
+                                default: {
+                                    otherClubs = Answer.first().content;
+                                    removeUserLastMessage(message.author); // remove user answer
+                                    return setTimeout(() => { return characterSheetScreenshot(); }, 1000); // go to the screenshot question
+                                }
+                            }
+                        }).catch(error => {
+                            if (error.message === "Cannot read property 'content' of undefined") return botReply(`❌ There was no message within the time limit (${Math.round(responseTime / 60000)}mins)! - Cancelled.`, message, 30000, true);
+                            else return;
+                        });
+                } else return;
+            })
+            .catch(error => {
+                botReply(`❌ An unknown error occured, please contact discord manager to fix this issue!`, message, 20000, true);
+                errorLog(`apply.js:2 otherClubsQuestion() Error`, error);
+            });
+    }
+
+    function characterSheetScreenshot(additionalText) {
+        if (!additionalText) additionalText = '';
+        else additionalText = additionalText + '\n(you can type **exit** to cancel app)\n';
+        return botReply(`${additionalText}\n> **Please upload a screenshot of the character sheet.**`, message, 0, false, null, './images/application/application.png')
+            .then(Question => {
+                if (Question) { // check if the bot sent question to the user, if so, collect one reply from the message.author.
+                    message.channel.awaitMessages(m => m.author.id === message.author.id, { max: 1, time: responseTime })
+                        .then(Answer => {
+                            Question.delete().catch(error => console.error(`apply.js:1 characterSheetScreenshot() Error to delate the message`, error)); // delete question if user answered
+                            if (Answer.first().content.startsWith(config.botPrefix)) return; // stop the application if other command was typed
+
+                            if (Answer.first().content.toLowerCase() === 'exit' || Answer.first().content.toLowerCase() === 'cancel') {
+                                removeUserLastMessage(message.author); // remove user answer
+                                return setTimeout(() => { return botReply(embedMessage('❌ Cancelling...', message.author), message, 5000, true); }, 1000);
+                            }
+
+                            else if (Answer.first().attachments.array()[0]) { // check if answer has attachment
+                                const appImageUrl = Answer.first().attachments.array()[0].url;
+                                if (appImageUrl.toLocaleLowerCase().endsWith('png') || appImageUrl.toLocaleLowerCase().endsWith('jpg') || appImageUrl.toLocaleLowerCase().endsWith('gif') || appImageUrl.toLocaleLowerCase().endsWith('jpeg')) {
+                                    return applicationPreview(Answer.first()); // go to the app preview
+                                } else {
+                                    removeUserLastMessage(message.author); // remove after user typed answer
+                                    return characterSheetScreenshot(`❌ Make sure your file is saved as one of the following extensions: PNG, JPG, GIF, JPEG!`);
+                                }
+
+                            } else {
+                                removeUserLastMessage(message.author); // remove after user typed answer
+                                return characterSheetScreenshot(`❌ You have to upload your character sheet.`);
+                            }
+
+                        }).catch(error => {
+                            if (error.message === "Cannot read property 'content' of undefined") return botReply(`❌ There was no message within the time limit (${Math.round(responseTime / 60000)}mins)! - Cancelled.`, message, 30000, true);
+                            else console.error(`apply.js:2 characterSheetScreenshot() Error to delate the message`, error);
+                        });
+                } else return;
+            })
+            .catch(error => {
+                botReply(`❌ An unknown error occured, please contact discord manager to fix this issue!`, message, 20000, true);
+                errorLog(`apply.js:3 characterSheetScreenshot() Error`, error);
+            });
+    }
+
+    async function applicationPreview(uploadMessage) {
+        const attachment = new Discord.MessageAttachment(uploadMessage.attachments.array()[0].url);
+
+        const appStorageMessage = await appStorageChannel.send(`${message.author.id} | An image storage request for the ${message.author}'s application.`, attachment)
+            .catch(error => {
+                botReply(`❌ An unknown error occured, please contact discord manager to fix this issue!`, message, 20000, true, false, false);
+                uploadMessage.delete({ timeout: 500 }).catch(error => console.error(`apply.js:1 applicationPreview() Error to delate the message`, error));
+                errorLog(`apply.js:2 applicationPreview() Error to send message in a storage channel.`, error);
             });
 
         if (appStorageMessage) {
-            let appStorageImageURL = appStorageMessage.attachments.array()[0].url;
-            // define the embed: send application preview with provided information
-            let embed_application_post_preview = new Discord.MessageEmbed()
+            uploadMessage.delete().catch(error => console.error(`apply.js:3 applicationPreview() Error to delate the message`, error));
+            const appStorageImageURL = appStorageMessage.attachments.array()[0].url;
+
+            const embed_application_post_preview = new Discord.MessageEmbed()
                 .setColor('YELLOW')
                 .setAuthor('Application Preview', LaezariaIconURL)
-                .setDescription(`${message.author}, There is your application preview ${nickName}\n\nMake sure everything is correct and react with ✅ emoji to proceed.\nIf you made a mistake or would like to edit your application, react with ❌ to cancel and try again.`)
+                .setDescription(`${message.author}, There is your application preview ${applicantNickname}!\n\nMake sure everything is correct and react with ✅ emoji to proceed.\nIf you made a mistake or would like to edit your application, react with ❌ to cancel and try again.`)
                 .addFields(
-                    { name: 'Trove IGN', value: '► `' + nickName + '`', inline: false },
-                    { name: 'List your total mastery points and your class with the highest PR', value: `► Trove Mastery Points: ${trovePoints.toLocaleString()}\n► Geode Mastery Points: ${geodePoints.toLocaleString()}\n► Highest Power Rank: ${powerRank.toLocaleString()}`, inline: false },
+                    { name: 'Trove IGN', value: '► `' + applicantNickname + '`', inline: false },
+                    { name: 'List your total mastery points and your class with the highest PR', value: `► Trove Mastery Points: ${troveMastery.toLocaleString()}\n► Geode Mastery Points: ${geodeMastery.toLocaleString()}\n► Highest Power Rank: ${powerRank.toLocaleString()}`, inline: false },
                     { name: 'Other clubs', value: `► ${otherClubs}`, inline: false },
-                    { name: 'Referral', value: `► ${appReferral}`, inline: false },
+                    { name: 'Referral', value: `► ${refferalMention}`, inline: false },
                 )
                 .setThumbnail(appStorageImageURL)
 
-            let appImageMessageRemoved = await appImageMessage.delete().catch(() => { return });
-            if (appImageMessageRemoved) {
-                return message.channel.send(embed_application_post_preview)
-                    .then((previewMessage) => { previewConfirmation(appReferral, previewMessage, message.author, nickName, trovePoints, geodePoints, powerRank, otherClubs, appStorageImageURL, appStorageMessage, appChannel); })
+            return message.channel.send(embed_application_post_preview)
+                .then((previewMessage) => { previewReactions(previewMessage, appStorageMessage, message.author); }) // run emoji functions
+                .catch(error => console.error(`apply.js:4 applicationPreview() Error to send the message`, error));
+        }
+        else return;
+    }
+
+    async function previewReactions(Question, appStorageMessage, applicationAuthor) {
+
+        if (Question) { // check if the bot message exists
+            const emojiFilter = (reaction, user) => { // accept interaction only from the applicationAuthor with reactions defined below
+                return ['✅', '❌'].includes(reaction.emoji.name) && !user.bot && applicationAuthor === user;
+            }
+
+            Question.awaitReactions(emojiFilter, { max: 1, time: responseTime })
+                .then(collected => {
+                    const reaction = collected.first();
+                    Question.delete().catch(error => console.error(`apply.js:1 previewReactions() Error to delate the message`, error)); // Delete bot's question
+
+                    switch (reaction.emoji.name) {
+                        case '✅': return setTimeout(() => { postApplication(appStorageMessage); }, 1000); // go to the postApplication function
+                        case '❌': return setTimeout(() => {
+                            appStorageMessage.delete().catch(error => console.error(`apply.js:2 previewReactions() Error to delate the message`, error));
+                            botReply(embedMessage('❌ Cancelling...', applicationAuthor), message, 5000, true);
+
+                        }, 1000); // exit the application and clear storeImage
+                        default: return;
+                    }
+                })
+                .catch(error => {
+                    appStorageMessage.delete().catch(error => console.error(`apply.js:3 previewReactions() Error to delate the message`, error));
+                    if (error.message === "Cannot read property 'emoji' of undefined") return botReply(`❌ There was no reaction within the time limit (${Math.round(responseTime / 60000)}mins)! - Cancelled.`, message, 30000, true);
+                    errorLog(`apply.js:4 previewReactions() Error when user answer the question.`, error);
+                });
+
+            try {
+                await Question.react('✅');
+                await Question.react('❌');
+            } catch (error) {
+                if (error.message === 'Unknown Message') return;
+                botReply(`An unknown error occured ;(`, message, 10000, true);
+                errorLog(`apply.js:5 previewReactions() Error to add reactions probably wrong emojis or missing permission.`, error);
             }
         }
+
+
     }
 
-    async function previewConfirmation(appReferral, previewMessage, applicationAuthor, nickName, trovePoints, geodePoints, powerRank, otherClubs, appStorageImageURL, appStorageMessage, appChannel) { // Application preview confirmation (emoji)
+    async function postApplication(appStorageMessage) {
+        const totalMasteryPoints = Math.round(troveMastery + geodeMastery);
+        const appStorageImageURL = appStorageMessage.attachments.array()[0].url;
 
-        try {
-            await previewMessage.react('✅');
-            await previewMessage.react('❌');
-        } catch (error) {
-            message.channel.send(`An unknown error occured ;(`)
-                .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
-            previewMessage.delete().catch(() => { return });
-            appStorageMessage.delete().catch(() => { return });
-            errorLog(`apply.js:1 previewConfirmation()\nError to add reactions probably wrong emojis.`, error)
-        }
-
-        const emojiFilter = (reaction, user) => {
-            return ['✅', '❌'].includes(reaction.emoji.name) && !user.bot && applicationAuthor === user;
-        }
-
-        previewMessage.awaitReactions(emojiFilter, { max: 1, time: 180000 })
-            .then(collected => {
-                const reaction = collected.first();
-
-                if (reaction.emoji.name === '✅') {
-                    return previewMessage.delete().catch(() => { return })
-                        .then(() => {
-                            return setTimeout(() => {
-                                postApplication(appReferral, nickName, trovePoints, geodePoints, powerRank, otherClubs, appStorageImageURL, appStorageMessage, appChannel);
-                            }, 1000);
-                        })
-                }
-
-                if (reaction.emoji.name === '❌') {
-                    return message.channel.send(`${message.author} ❌ Cancelling on user request...`)
-                        .then((message) => {
-                            message.delete({ timeout: 5000 }).catch(() => { return });
-                            previewMessage.delete().catch(() => { return });
-                            appStorageMessage.delete().catch(() => { return });
-                        });
-                }
-            })
-            .catch(error => {
-                if (error.message === "Cannot read property 'emoji' of undefined") return message.channel.send(`${message.author} ❌ There was no reaction within the time limit (3mins)! - cancelling...`)
-                    .then(message => {
-                        message.delete({ timeout: 30000 }).catch(() => { return });
-                        previewMessage.delete().catch(() => { return });
-                        appStorageMessage.delete().catch(() => { return });
-                    }); // remove bot info about time ran out
-
-                removeUserLastMessage(message.author); // remove after user typed answer
-                errorLog(`apply.js:2 previewConfirmation()\nError when user answer the question.`, error);
-            });
-    }
-
-    async function postApplication(appReferral, nickName, trovePoints, geodePoints, powerRank, otherClubs, appStorageImageURL, appStorageMessage, appChannel) { // Post application
-        let totalMasteryPoints = Math.round(trovePoints + geodePoints);
         // define the embed: send application with provided information
-        let embed_application_post = new Discord.MessageEmbed()
+        const embed_application_post = new Discord.MessageEmbed()
             .setColor(embedColors.ClubApplications)
-            .setAuthor(`Laezaria Application: ${nickName}`, LaezariaIconURL)
+            .setAuthor(`Laezaria Application: ${applicantNickname}`, LaezariaIconURL)
             .addFields(
-                { name: 'Trove IGN', value: '► `' + nickName + '`', inline: false },
-                { name: 'List your total mastery points and your class with the highest PR', value: `► Trove Mastery Points: ${trovePoints.toLocaleString()}\n► Geode Mastery Points: ${geodePoints.toLocaleString()}\n► Total Mastery Points: ${totalMasteryPoints.toLocaleString()}\n► Highest Power Rank: ${powerRank.toLocaleString()}`, inline: false },
+                { name: 'Trove IGN', value: '► `' + applicantNickname + '`', inline: false },
+                { name: 'List your total mastery points and your class with the highest PR', value: `► Trove Mastery Points: ${troveMastery.toLocaleString()}\n► Geode Mastery Points: ${geodeMastery.toLocaleString()}\n► Total Mastery Points: ${totalMasteryPoints.toLocaleString()}\n► Highest Power Rank: ${powerRank.toLocaleString()}`, inline: false },
                 { name: 'Other clubs', value: `► ${otherClubs}`, inline: false },
-                { name: 'Referral', value: `► ${appReferral}`, inline: false },
-                { name: 'Screenshot:', value: `${appStorageImageURL}`, inline: false },
+                { name: 'Referral', value: `► ${refferalMention}`, inline: false },
+                { name: 'Screenshot:', value: `► [Click to view an image](${appStorageImageURL} 'Application Image')`, inline: false },
                 { name: 'Applicant information', value: `Mention: _${message.author}_\nTag: _${message.author.tag}_`, inline: false },
                 { name: 'ID', value: `${message.author.id}`, inline: false },
             )
             .setThumbnail(appStorageImageURL)
             .setFooter(`Club Members(👍👎) and Captains(🍏🍎) can vote for this application with emojis.`)
 
-        let applicationSent = await appChannel.send(embed_application_post)
+        const applicationSent = await appChannel.send(embed_application_post)
             .catch(error => {
-                message.channel.send(`An unknown error occured ;(`)
-                    .then(message => message.delete({ timeout: 5000 })).catch(() => { return });
-                appStorageMessage.delete().catch(() => { return });
-                errorLog(`apply.js:1 postApplication()\nError send an application.`, error);
+                botReply(`❌ An unknown error occured, please contact discord manager to fix this issue!`, message, 20000, true, false, false);
+                appStorageMessage.delete().catch(() => console.error(`apply.js:1 postApplication() Error to delate the message.`, error));
+                errorLog(`apply.js:2 postApplication() Error send an application.`, error);
             });
 
         if (applicationSent) {
-            renameApplicant(message.member, nickName);
+            applicationURL = applicationSent.url;
+            renameApplicant(message.member, applicantNickname);
 
             // define the embed: send application with provided information
-            let embed_application_post_confirmation = new Discord.MessageEmbed()
+            const embed_application_post_confirmation = new Discord.MessageEmbed()
                 .setColor('ORANGE')
                 .setAuthor('Laezaria - Application System', LaezariaIconURL)
                 .setDescription(`${message.author}, Your application has been posted!\n[**Click here to see your message**](${applicationSent.url})`)
                 .setFooter(`There will be a window of at least 24 hours after you have applied.\nA time where our members and captains will vote on your application.`)
 
-            message.channel.send(embed_application_post_confirmation)
-                .then(message => message.delete({ timeout: 20000 }).catch(() => { return }))
-                .catch(error => errorLog(`apply.js:2 postApplication()\nError to send application message post.`, error));
+            message.channel.send(`That's all, but if you would like to give us feedback about the application process, please react with ✅ or ❌ to exit without feedback.\n‏‏‎ ‎`, embed_application_post_confirmation)
+                .then(messageApp => feedbackReactions(messageApp, message.author))
+                .catch(error => errorLog(`apply.js:2 postApplication() Error to send application message post.`, error));
             appStorageMessage.edit(`${message.author.id} | An image storage request for the ${message.author}'s application.\n${applicationSent.url}`);
 
-            // console.log(applicationSent);
             try {
                 await applicationSent.react('👍'); // Member positive reaction
                 await applicationSent.react('👎'); // Member negative reaction
                 await applicationSent.react('🍏'); // Captain posotive reaction
                 await applicationSent.react('🍎'); // Captain negative reaction
-            } catch (error) { errorLog(`apply.js:3 postApplication()\nError to add reactions probably missing ADD_REACTIONS or emojis are wrong.`, error) }
+            } catch (error) { errorLog(`apply.js:3 postApplication() Error to add reactions probably missing ADD_REACTIONS or emojis are wrong.`, error) }
+        } else return;
+    }
+
+    async function feedbackReactions(Question, applicationAuthor) {
+
+        if (Question) { // check if the bot message exists
+            const emojiFilter = (reaction, user) => { // accept interaction only from the applicationAuthor with reactions defined below
+                return ['✅', '❌'].includes(reaction.emoji.name) && !user.bot && applicationAuthor === user;
+            }
+
+            Question.awaitReactions(emojiFilter, { max: 1, time: 60000 })
+                .then(collected => {
+                    const reaction = collected.first();
+                    Question.delete().catch(error => console.error(`apply.js:1 previewReactions() Error to delate the message`, error)); // Delete bot's question
+
+                    switch (reaction.emoji.name) {
+                        case '✅': return setTimeout(() => { return feedbackRatingQuestion(); }, 1000); // go to the feedback question
+                        default: return;
+                    }
+                })
+                .catch(error => {
+                    if (error.message === "Cannot read property 'emoji' of undefined") return;
+                    errorLog(`apply.js:4 previewReactions() Error when user answer the question.`, error);
+                });
+
+            try {
+                await Question.react('✅');
+                await Question.react('❌');
+            } catch (error) {
+                if (error.message === 'Unknown Message') return;
+                botReply(`An unknown error occured ;(`, message, 10000, true);
+                errorLog(`apply.js:5 previewReactions() Error to add reactions probably wrong emojis or missing permission.`, error);
+            }
         }
+
+
+    }
+
+    function feedbackRatingQuestion(additionalText) {
+        if (!additionalText) additionalText = '';
+        else additionalText = additionalText + '\n(you can type **exit** to cancel)\n';
+        return botReply(`${additionalText}\n> How satisfied are you with the application system? [1-10]\n**1** (Not satisfied at all) up to **10** (Very satisfied)**`, message, 0, false, false, false)
+            .then(Question => {
+                if (Question) { // check if the bot sent question to the user, if so, collect one reply from the message.author.
+                    message.channel.awaitMessages(m => m.author.id === message.author.id, { max: 1, time: 60000 * 2 })
+                        .then(Answer => {
+                            Question.delete().catch(error => console.error(`apply.js:1 feedbackRatingQuestion() Error to delate the message`, error)); // delete question if user answered
+                            if (Answer.first().content.startsWith(config.botPrefix)) return; // stop the application if other command was typed
+
+                            if (Answer.first().content.toLowerCase() === 'exit' || Answer.first().content.toLowerCase() === 'cancel') {
+                                removeUserLastMessage(message.author); // remove user answer
+                                return setTimeout(() => { return botReply(embedMessage('❌ Cancelling...', message.author), message, 5000, true); }, 1000);
+                            }
+
+                            const replace2Number = Answer.first().content.replace(/[., ]/g, ""); // replace answer to number
+                            if (isNaN(replace2Number) === true || !replace2Number) { // if answer is not a number
+                                removeUserLastMessage(message.author); // remove after user typed answer
+                                return feedbackRatingQuestion('❌ Your answer is not a number (1-10 range).');
+                            }
+                            else if (replace2Number > 10) { // Check rating - upper limit 10 points
+                                removeUserLastMessage(message.author); // remove after user typed answer
+                                return feedbackRatingQuestion('❌ Your rating is too high (10 maximum)!');
+                            }
+                            else if (replace2Number < 1) {
+                                removeUserLastMessage(message.author); // remove after user typed answer
+                                return feedbackRatingQuestion('❌ Your rating is too low (1 minimum)!');
+                            }
+
+                            feedbackRate = replace2Number;
+                            switch (replace2Number) {
+                                case '1': case '2': case '3': case '4': case '5': case '6': {
+
+                                    removeUserLastMessage(message.author); // remove after user typed answer
+                                    return setTimeout(() => { feedbackOpinionQuestions(); }, 1000);
+                                }
+                                case '7': case '8': case '9': case '10': {
+                                    removeUserLastMessage(message.author); // remove after user typed answer
+                                    const embed_feedback_log = new Discord.MessageEmbed()
+                                        .setColor('GREEN')
+                                        .setTitle(`Club Application System - Feedback`)
+                                        .addFields({ name: `Rating: ${feedbackRate}`, value: `[Application link](${applicationURL} 'Click to go to the application post')`, inline: false },
+                                            { name: `User: ${message.author.tag}`, value: `${message.author}\nID: ${message.author.id}`, inline: false })
+                                        .setFooter(`ApplyJS:2`)
+                                        .setThumbnail(LaezariaIconURL)
+                                        .setTimestamp()
+                                    sendEmbedLog(embed_feedback_log, config.botlogs.channelID, 'Laezaria Bot - Feedback');
+                                    return botReply(`Thank you for the feedback 💙`, message, 7000, true, false, false);
+                                }
+                                default: return;
+                            }
+
+                        }).catch(error => {
+                            if (error.message === "Cannot read property 'content' of undefined") return botReply(`❌ There was no message within the time limit (2mins)! - Cancelled.`, message, 30000, true);
+                            else return;
+                        });
+                } else return;
+            })
+            .catch(error => {
+                botReply(`❌ An unknown error occured, please contact discord manager to fix this issue!`, message, 20000, true);
+                errorLog(`apply.js:2 feedbackRatingQuestion() Error`, error);
+            });
+    }
+
+    function feedbackOpinionQuestions(additionalText) {
+        if (!additionalText) additionalText = '';
+        else additionalText = additionalText + '\n(you can type **exit** to cancel)\n';
+        return botReply(`${additionalText}\n> Can you tell us what you would like to change to make the rating higher?\n[up to 2000 characters]`, message, 0, false, false, false)
+            .then(Question => {
+                if (Question) { // check if the bot sent question to the user, if so, collect one reply from the message.author.
+                    message.channel.awaitMessages(m => m.author.id === message.author.id, { max: 1, time: responseTime })
+                        .then(Answer => {
+                            Question.delete().catch(error => console.error(`apply.js:1 feedbackOpinionQuestions() Error to delate the message`, error)); // delete question if user answered
+                            if (Answer.first().content.startsWith(config.botPrefix)) return; // stop the application if other command was typed
+
+                            if (Answer.first().content.length < 1 || Answer.first().content.length > 2000) { // Check nickname length
+                                removeUserLastMessage(message.author); // remove user answer
+                                return feedbackOpinionQuestions(`❌ Your feedback is either too short or too long.`);
+                            }
+
+                            switch (Answer.first().content.toLowerCase()) {
+                                case 'exit': case 'cancel': {
+                                    removeUserLastMessage(message.author); // remove user answer
+                                    return setTimeout(() => { return botReply(embedMessage('❌ Cancelling...', message.author), message, 5000, true); }, 1000);
+                                }
+
+                                default: {
+                                    feedbackText = Answer.first().content;
+                                    removeUserLastMessage(message.author); // remove user answer
+
+                                    const embed_feedback_log = new Discord.MessageEmbed()
+                                        .setColor('GREEN')
+                                        .setTitle(`Club Application System - Feedback`)
+                                        .setDescription(feedbackText)
+                                        .addFields({ name: `Rating: ${feedbackRate}`, value: `[Application link](${applicationURL} 'Click to go to the application post')`, inline: false },
+                                        { name: `User: ${message.author.tag}`, value: `${message.author}\nID: ${message.author.id}`, inline: false })
+                                        .setFooter(`ApplyJS:1`)
+                                        .setThumbnail(LaezariaIconURL)
+                                        .setTimestamp()
+                                    sendEmbedLog(embed_feedback_log, config.botlogs.channelID, 'Laezaria Bot - Feedback');
+                                    return botReply(`Thank you for the feedback 💙`, message, 7000, true, false, false);
+                                }
+                            }
+                        }).catch(error => {
+                            if (error.message === "Cannot read property 'content' of undefined") return botReply(`❌ There was no message within the time limit (${Math.round(responseTime / 60000)}mins)! - Cancelled.`, message, 30000, true);
+                            else return;
+                        });
+                } else return;
+            })
+            .catch(error => {
+                botReply(`❌ An unknown error occured, please contact discord manager to fix this issue!`, message, 20000, true);
+                errorLog(`apply.js:2 feedbackOpinionQuestions() Error`, error);
+            });
     }
 
     function renameApplicant(applicantGuildMember, nickname) { // Rename applicant
-        // console.warn(applicantGuildMember);
         applicantGuildMember.setNickname(nickname, 'Laezaria Application System')
-            // .then(changed => { console.warn(`${applicantGuildMember.user.tag} nickname changed to: Test`) })
-            .catch(error => errorLog(`apply.js:1 renameApplicant()\nError to rename applicant.\n${applicantGuildMember.user.tag} ID:${applicantGuildMember.id}`, error));
+            .catch(error => errorLog(`apply.js:1 renameApplicant() Error to rename applicant.\n${applicantGuildMember.user.tag} ID:${applicantGuildMember.id}`, error));
+    }
+
+    function checkVariables() { // debug
+        console.debug(`nickname: ${applicantNickname}`);
+        console.debug(`referral: ${refferalMention}`);
+        console.debug(`trovePoints: ${troveMastery}`);
+        console.debug(`geodePoints: ${geodeMastery}`);
+        console.debug(`powerRank: ${powerRank}`);
+        console.debug(`otherClubs: ${otherClubs}`);
+        console.debug(`feedbackRate: ${feedbackRate}`);
+        console.debug(`feedbackText: ${feedbackText}`);
+        console.debug(`applicationURL: ${applicationURL}`);
+        console.debug(`----------------------------------------------`);
     }
 }

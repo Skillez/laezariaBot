@@ -11,8 +11,8 @@ bot.on('ready', async () => {
     // Update Leaderboard Messages - https://crontab.guru/examples.html
     cron.schedule('0 13 * * *', () => { // At 1pm daily.
         console.log('leaderboard-channel.js: Leaderboard message update:', currentUTCDate());
-        updateLeaderboardMessage(config.Leaderboard_Message_CurrentID, 'points_current', 'Season 1');
-        updateLeaderboardMessage(config.Leaderboard_Message_OverallID, 'points_overall', 'Overall', 'peepoIloveu');
+        updateLeaderboardMessage(config.leaderboard.message_CurrentID, 'points_current', 'Season 1');
+        updateLeaderboardMessage(config.leaderboard.message_OverallID, 'points_overall', 'Overall', 'peepoIloveu');
     });
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,7 +69,7 @@ bot.on('ready', async () => {
 
     async function updateLeaderboardMessage(messageID, leaderboardFile, leaderboardName, emojiName) {
         // Get the channel and fetch its last 20 messages
-        const leaderboardFetch = await bot.guilds.cache.get(config.LaezariaServerID).channels.cache.get(config.Leaderboard_ChannelID).messages.fetch({ limit: 20 })
+        const leaderboardFetch = await bot.guilds.cache.get(config.laezariaServerID).channels.cache.get(config.leaderboard.channelID).messages.fetch({ limit: 20 })
             .catch((error) => errorLog(`leaderboard-channel.js:1 updateLeaderboardMessage()\nError to fetch the messages for the channel.`, error));
 
         // If leaderboardFetch is found

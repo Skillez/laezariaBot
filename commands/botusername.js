@@ -5,7 +5,7 @@ module.exports.help = {
     name: "botusername",
     description: "Modifies the bot username.",
     type: "owner",
-    usage: `ℹ️ Format: **${config.BotPrefix}botusername userName(2-32 characters)**\n\nℹ️ Example: ${config.BotPrefix}botusername LaezBot`
+    usage: `ℹ️ Format: **${config.botPrefix}botusername userName(2-32 characters)**\n\nℹ️ Example: ${config.botPrefix}botusername LaezBot`
 };
 
 module.exports.run = async (bot, message, args) => {
@@ -22,7 +22,7 @@ module.exports.run = async (bot, message, args) => {
         let BotUserName = args.join(" ")
         return ChangeBotUsername(BotUserName);
 
-    } else return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+    } else return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
         .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
     //////////////////////////////////////////////////////////////////////////////////////////////

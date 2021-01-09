@@ -2,14 +2,14 @@ const { bot, Discord, sendEmbedLog, embedColors, LaezariaIconURL, BotVersion, er
 const config = require("../bot-settings.json");
 const fs = require("fs");
 
-bot.login(config.BotToken);
+bot.login(config.botToken);
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                                    READY EVENT HANDLER                                   //
 //////////////////////////////////////////////////////////////////////////////////////////////
 
 bot.on('ready', async () => {
-    const guild = bot.guilds.cache.get(config.LaezariaServerID);
+    const guild = bot.guilds.cache.get(config.laezariaServerID);
 
     // Fetch all members from the guild
     guild.members.fetch()
@@ -38,7 +38,7 @@ bot.on('ready', async () => {
                     .catch(error => errorLog(`ready-event.js:3 ready Event()\nError to set the bot activity.`, error));
             }
 
-            const Owner = bot.users.cache.get(config.BotOwnerID);
+            const Owner = bot.users.cache.get(config.botOwnerID);
             //define the embed: bot is ready to work
             let embed_bot_logged = new Discord.MessageEmbed()
                 .setColor(embedColors.ReadyEvent)
@@ -57,12 +57,12 @@ bot.on('ready', async () => {
                 .setImage('https://skillez.eu/images/discord/laezbanner.png')
                 .setFooter('Bot is ready to work')
                 .setTimestamp()
-            await sendEmbedLog(embed_bot_logged, config.BotLog_ChannelID, 'Laezaria Bot - Logs');
+            await sendEmbedLog(embed_bot_logged, config.botlogs.channelID, 'Laezaria Bot - Logs');
         }).catch(error => errorLog(`ready-event.js:4 ready Event()\nError to fetch guild members i guess.`, error));
 
 
     // Post patch notes on captain channel.
-    const patchNotesChannel = guild.channels.cache.get(config.CaptainChannelID);
+    const patchNotesChannel = guild.channels.cache.get(config.channels.captainChannelID);
     if (patchNotesChannel) {
         const patchNotes = fs.readFileSync("./README.md", "utf8");
 

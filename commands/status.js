@@ -5,7 +5,7 @@ module.exports.help = {
     name: "status",
     description: "Shows some information about the user.",
     type: "public",
-    usage: `ℹ️ Format: **${config.BotPrefix}status userID/mention**\n\nℹ️ Examples:\n${config.BotPrefix}status ${config.BotOwnerID}\n${config.BotPrefix}status @mention`
+    usage: `ℹ️ Format: **${config.botPrefix}status userID/mention**\n\nℹ️ Examples:\n${config.botPrefix}status ${config.botOwnerID}\n${config.botPrefix}status @mention`
 };
 
 module.exports.run = async (bot, message, args) => {
@@ -18,7 +18,7 @@ module.exports.run = async (bot, message, args) => {
 
         let user2check = message.mentions.users.first() || args[0];
         return CheckUserStatus(user2check);
-    } else return message.channel.send(`Wrong command format, type **${config.BotPrefix}help ${module.exports.help.name}** to see usage and examples!`)
+    } else return message.channel.send(`Wrong command format, type **${config.botPrefix}help ${module.exports.help.name}** to see usage and examples!`)
         .then(message => message.delete({ timeout: 10000 })).catch(() => { return });
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -33,7 +33,7 @@ module.exports.run = async (bot, message, args) => {
             let embed_status_information_no_game = new Discord.MessageEmbed()
                 .setColor(embedColors.StatusMessage)
                 .setTitle('User Status!')
-                .setDescription(`Command: ** ${config.BotPrefix}status **\nChannel: ${message.channel} \n\nStatus: ** ${UserStatus.presence.status.toUpperCase()}**`)
+                .setDescription(`Command: ** ${config.botPrefix}status **\nChannel: ${message.channel} \n\nStatus: ** ${UserStatus.presence.status.toUpperCase()}**`)
 
                 .addFields(
                     { name: 'Nickname', value: `${UserStatus} `, inline: true },
@@ -60,7 +60,7 @@ module.exports.run = async (bot, message, args) => {
                 let embed_status_information_game = new Discord.MessageEmbed()
                     .setColor(embedColors.StatusMessage)
                     .setTitle('User Status!')
-                    .setDescription(`Command: ** ${config.BotPrefix}status **\nChannel: ${message.channel} \n\nStatus: ** ${UserStatus.presence.status.toUpperCase()}**\nPlaying: ${GameTitle}`)
+                    .setDescription(`Command: ** ${config.botPrefix}status **\nChannel: ${message.channel} \n\nStatus: ** ${UserStatus.presence.status.toUpperCase()}**\nPlaying: ${GameTitle}`)
                     .addFields(
                         { name: 'Nickname', value: `${UserStatus} `, inline: true },
                         { name: 'ID', value: `${UserStatus.id} `, inline: true },
@@ -90,7 +90,7 @@ module.exports.run = async (bot, message, args) => {
                 let embed_status_information_game = new Discord.MessageEmbed()
                     .setColor(embedColors.StatusMessage)
                     .setTitle('User Status!')
-                    .setDescription(`Command: ** ${config.BotPrefix}status **\nChannel: ${message.channel} \n\nStatus: ** ${UserStatus.presence.status.toUpperCase()}**\nPlaying: ${GameTitle}`)
+                    .setDescription(`Command: ** ${config.botPrefix}status **\nChannel: ${message.channel} \n\nStatus: ** ${UserStatus.presence.status.toUpperCase()}**\nPlaying: ${GameTitle}`)
                     .addFields(
                         { name: 'Nickname', value: `${UserStatus} `, inline: true },
                         { name: 'ID', value: `${UserStatus.id} `, inline: true },
