@@ -8,4 +8,4 @@
 
 > Minor changes
 + cleared configuration file
-+ improved some functions
++ improved some functions botIgnore

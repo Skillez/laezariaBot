@@ -1,0 +1,28 @@
+{
+  "name": "laezariae-bot",
+  "version": "1.0.0",
+  "description": "Private discord bot for Laezaria",
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Skillez/laezariaBot.git"
+  },
+  "scripts": {
+    ".": "node app.js --trace-warnings"
+  },
+  "keywords": [],
+  "author": "Skillez",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Skillez/laezariaBot/issues"
+  },
+  "homepage": "https://github.com/Skillez/laezariaBot#readme",
+  "dependencies": {
+    "canvas": "^2.7.0",
+    "console-stamp": "^3.0.2",
+    "discord.js": "^12.5.3",
+    "google-spreadsheet": "^3.1.15",
+    "googleapis": "^73.0.0",
+    "node-cron": "^3.0.0"
+  }
+}

@@ -404,10 +404,12 @@ module.exports.run = async (bot, message) => {
     function requirementCheck() {
         let outputStringMessage = '';
         if (powerRank < config.requirements.powerRank) outputStringMessage = outputStringMessage + `• Your highest **Power Rank**(${powerRank.toLocaleString()}) is below our requirements(${config.requirements.powerRank.toLocaleString()}).\n`;
+        else return otherClubsQuestion(); // go to the other clubs question
+
         if (troveMastery < config.requirements.trovePoints) outputStringMessage = outputStringMessage + `• **Trove Mastery Points**(${troveMastery.toLocaleString()}) are below our requirements(${config.requirements.trovePoints.toLocaleString()}).\n`;
         if (geodeMastery < config.requirements.geodePoints) outputStringMessage = outputStringMessage + `• **Geode Mastery Points**(${geodeMastery.toLocaleString()}) are below our requirements(${config.requirements.geodePoints.toLocaleString()}).\n`;
 
-        if (outputStringMessage === '') return otherClubsQuestion(); // go to the other clubs question
+        if (outputStringMessage === '' || outputStringMessage === `• Your highest **Power Rank**(${powerRank.toLocaleString()}) is below our requirements(${config.requirements.powerRank.toLocaleString()}).\n`) return otherClubsQuestion(); // go to the other clubs question
         else return botReply(`**❌ Your application has been canceled**\nThank you for applying to ${getEmoji(message.guild.id, 'laezaria')}Laezaria.\nUnfortunately, your application has been rejected as you do not meet our minimum requirements.\n\n${outputStringMessage}\n Feel free to stay around our discord and reapply once you've met the requirements. We look forward to seeing you soon ${getEmoji(message.guild.id, 'peepoLove')}`, message, 60000, true, false, './images/application/underRequirements.gif');
     }
 
@@ -656,7 +658,7 @@ module.exports.run = async (bot, message) => {
     function feedbackRatingQuestion(additionalText) {
         if (!additionalText) additionalText = '';
         else additionalText = additionalText + '\n(you can type **exit** to cancel)\n';
-        return botReply(`${additionalText}\n> How satisfied are you with the application system? [1-10]\n**1** (Not satisfied at all) up to **10** (Very satisfied)**`, message, 0, false, false, false)
+        return botReply(`${additionalText}\n> How satisfied are you with the application system? [1-10]\n**1** (Not satisfied at all) up to **10** (Very satisfied)`, message, 0, false, false, false)
             .then(Question => {
                 if (Question) { // check if the bot sent question to the user, if so, collect one reply from the message.author.
                     message.channel.awaitMessages(m => m.author.id === message.author.id, { max: 1, time: 60000 * 2 })
@@ -749,7 +751,7 @@ module.exports.run = async (bot, message) => {
                                         .setTitle(`Club Application System - Feedback`)
                                         .setDescription(feedbackText)
                                         .addFields({ name: `Rating: ${feedbackRate}`, value: `[Application link](${applicationURL} 'Click to go to the application post')`, inline: false },
-                                        { name: `User: ${message.author.tag}`, value: `${message.author}\nID: ${message.author.id}`, inline: false })
+                                            { name: `User: ${message.author.tag}`, value: `${message.author}\nID: ${message.author.id}`, inline: false })
                                         .setFooter(`ApplyJS:1`)
                                         .setThumbnail(LaezariaIconURL)
                                         .setTimestamp()
