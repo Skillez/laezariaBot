@@ -1,4 +1,4 @@
 #!/bin/bash
 echo Starting laezariaBot...
-#cd /home/discord/laezariaBot/
+cd /home/skillez/discordBots/laezBot/
 node app.js
