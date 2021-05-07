@@ -54,7 +54,7 @@ bot.on('ready', async () => {
                     { name: 'Bot Account ID', value: bot.user.id, inline: false },
                 )
                 .setThumbnail(bot.user.displayAvatarURL())
-                .setImage('https://skillez.eu/images/discord/laezbanner.png')
+                .setImage('https://i.imgur.com/3jr1C3c.png')
                 .setFooter('Bot is ready to work')
                 .setTimestamp()
             await sendEmbedLog(embed_bot_logged, config.botlogs.channelID, 'Laezaria Bot - Logs');

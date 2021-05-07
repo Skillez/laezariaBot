@@ -6,7 +6,7 @@ require('console-stamp')(console, 'dd/mm/yyyy - HH:MM:ss');
 const bot = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 
 // define current bot version
-const BotVersion = '1.6';
+const BotVersion = '1.6b';
 
 // define global embed color
 const embedColors = {
@@ -48,7 +48,7 @@ const emojiCharacters = {
 // let roleColor = message.guild.me.displayHexColor === "#000000" ? "#ffffff" : message.guild.me.displayHexColor;
 
 // define icon image url for embeds
-const LaezariaIconURL = 'https://skillez.eu/images/discord/laezicon.png'
+const LaezariaIconURL = 'https://i.imgur.com/wplVBfr.png';
 
 // bot.setMaxListeners(25);
 
@@ -257,7 +257,7 @@ module.exports = {
 			switch (error.message) {
 				case "Cannot read property 'send' of undefined": {
 					return logChannel.createWebhook(embedName, {
-						avatar: 'https://skillez.eu/images/discord/laezicon.png',
+						avatar: LaezariaIconURL,
 					})
 						.then(webhook => {
 							webhook.send(embedMessage);

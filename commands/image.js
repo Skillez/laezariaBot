@@ -5,7 +5,7 @@ module.exports.help = {
     name: "image",
     description: "Posts an image using the bot.",
     type: "captain",
-    usage: `ℹ️ Format: **${config.botPrefix}image imageURL messageText(optional)**\n\nℹ️ imageURL requirements:\n• Starts with: http or https\n• Ends with: png, jpg, gif or jpeg\n\nℹ️ Examples:\n${config.botPrefix}image laezaria\n${config.botPrefix}image <https://skillez.eu/images/discord/laezicon.png>\n${config.botPrefix}image <https://i.imgur.com/10OGBDT.png> Laezaria Server Icon`
+    usage: `ℹ️ Format: **${config.botPrefix}image imageURL messageText(optional)**\n\nℹ️ imageURL requirements:\n• Starts with: http or https\n• Ends with: png, jpg, gif or jpeg\n\nℹ️ Examples:\n${config.botPrefix}image laezaria\n${config.botPrefix}image <https://i.imgur.com/wplVBfr.png>\n${config.botPrefix}image <https://i.imgur.com/10OGBDT.png> Laezaria Server Icon`
 };
 
 module.exports.run = async (bot, message, args) => {
@@ -18,7 +18,7 @@ module.exports.run = async (bot, message, args) => {
         .then(message => message.delete({ timeout: 10000 })).catch(() => { return }); // ATTACH_FILES IS REQUIRED TO USE
 
     if (args[0]) {
-        if (args[0].toLowerCase() === 'laezaria') return AttachTheImage('https://skillez.eu/images/discord/laezicon.png');
+        if (args[0].toLowerCase() === 'laezaria') return AttachTheImage('https://i.imgur.com/wplVBfr.png');
 
         let text2send = args.slice(1).join(" ");
         return AttachTheImage(args[0], text2send); // Run the function to attach an image

@@ -86,7 +86,7 @@ module.exports.run = async (bot, message) => {
 
     const filter = m => m.author.id === message.author.id;
 
-    return message.reply("Before we proceed forward, make sure you have the values for these stats.\n**Note:** Contact the discord manager if you are experiencing any errors with the command.\n\nWhat do you need?\n```less\n[1] Trove Mastery Points (exact number from the leaderboard)\n[2] Geode Mastery Points (exact number from the leaderboard)\n[3] Highest Class Power Rank (exact number)\n[4] Screenshot with visible character sheet (C)```Example: https://skillez.eu/images/discord/app.png\n\nWe strongly recommend to use **Enhanced UI Mod** which is available on Trovesaurus and Steam Workshop.\n\nIf you're ready, then type **ready** or __anything else__ to abandon this application.")
+    return message.reply("Before we proceed forward, make sure you have the values for these stats.\n**Note:** Contact the discord manager if you are experiencing any errors with the command.\n\nWhat do you need?\n```less\n[1] Trove Mastery Points (exact number from the leaderboard)\n[2] Geode Mastery Points (exact number from the leaderboard)\n[3] Highest Class Power Rank (exact number)\n[4] Screenshot with visible character sheet (C)```Example: https://i.imgur.com/ejao9la.png\n\nWe strongly recommend to use **Enhanced UI Mod** which is available on Trovesaurus and Steam Workshop.\n\nIf you're ready, then type **ready** or __anything else__ to abandon this application.")
         .then(ReadyQuestion => {
             message.channel.awaitMessages(filter, { max: 1, time: 180000 })
                 .then(ReadyAnswer => {
@@ -530,7 +530,7 @@ module.exports.run = async (bot, message) => {
     }
 
     function Question6(appReferral, nickName, trovePoints, geodePoints, powerRank, otherClubs) { // Upload character sheet screenshot
-        return message.reply("Please upload a screenshot of the character sheet now.\nMake sure your file is saved as one of the following extensions: **PNG**, **JPG**, **GIF**, **JPEG**\nExample as shown: https://skillez.eu/images/discord/app.png\n(or type anything to stop)")
+        return message.reply("Please upload a screenshot of the character sheet now.\nMake sure your file is saved as one of the following extensions: **PNG**, **JPG**, **GIF**, **JPEG**\nExample as shown: https://i.imgur.com/ejao9la.png\n(or type anything to stop)")
             .then(Question => {
                 message.channel.awaitMessages(filter, { max: 1, time: 180000 })
                     .then(Answer => {
