@@ -251,7 +251,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
         return applicantGuildMember.send(message2send)
             .then(() => {
                 if (reaction.emoji.name === "yeah") return sendEmbedLog(embed_accept_dm_success_log, config.botlogs.directMessageChannelID, 'Laezaria Bot - Direct Messages');
-                return sendEmbedLog(embed_reject_dm_success_log, config.botlogs.directMessageChannelID, 'Laezaria Bot - Direct Messages');
+                else return sendEmbedLog(embed_reject_dm_success_log, config.botlogs.directMessageChannelID, 'Laezaria Bot - Direct Messages');
 
             }).catch(() => { // IF DIRECT MESSAGE CANNOT BE DELIEVERED
                 // define the embed: channel reject success log
@@ -285,7 +285,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                     return MessageChannel.send(message2send)
                         .then(() => {
                             if (reaction.emoji.name === "yeah") sendEmbedLog(embed_accept_channel_success_log, config.botlogs.directMessageChannelID, 'Laezaria Bot - Direct Messages');
-                            return sendEmbedLog(embed_reject_channel_success_log, config.botlogs.directMessageChannelID, 'Laezaria Bot - Direct Messages');
+                            else return sendEmbedLog(embed_reject_channel_success_log, config.botlogs.directMessageChannelID, 'Laezaria Bot - Direct Messages');
                         });
                 }
             });
