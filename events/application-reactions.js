@@ -60,7 +60,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
 
                         let botLogChannel = bot.channels.cache.get(config.botlogs.channelID);
                         if (botLogChannel) {
-                            let YeahMessageFunc = `${user}, attention required!\n―――――――――――――――――\nIt looks like you've **ACCEPTED** this application!\n${reaction.message.url}\n\n**Target: ${applicantUser}**\n${applicantUser.tag}\nID: ${applicantUser.id}\n` + "```Please, confirm that the action is intended.```\n✅ Sends a welcome message to the target user\n❌ closes this menu if that was a misclick (the bot will not send any messages)";
+                            let YeahMessageFunc = `${user}, attention required!\n―――――――――――――――――\nIt looks like you've **ACCEPTED** this application!\n${reaction.message.url}\n\n**Target: ${applicantUser ? `${applicantUser}**\n${applicantUser?.tag}\nID: ${applicantUser?.id}\n` : `@Unknown User** (probably left the server)\n`} ` + "```Please, confirm that the action is intended.```\n✅ Sends a welcome message to the target user\n❌ closes this menu if that was a misclick (the bot will not send any messages)";
                             return botLogChannel.send(YeahMessageFunc).then((message) => applicationVoteFinished(reaction, message, user, applicantGuildMember, applicantUser));
                         } else {
                             errorLog(`application-reactions.js:2 messageReactionAdd Event\nbotLogChannel not found.`, undefined);
@@ -198,7 +198,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                 .addFields(
                     { name: `${reaction.emoji} Used by`, value: user, inline: true },
                     { name: `Channel`, value: reaction.message.channel, inline: true },
-                    { name: `Receiver Information`, value: `${applicantUser}\n${applicantUser.tag}\nID: ${applicantUser.id}`, inline: false })
+                    { name: `Receiver Information`, value: applicantUser ? `${applicantUser}\n${applicantUser?.tag}\nID: ${applicantUser?.id}` : `Undefined User`, inline: false })
                 .setFooter(`LOG:ID ApplicationReactionJS_1`)
                 .setThumbnail(LaezariaIconURL)
                 .setTimestamp()
@@ -211,7 +211,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                 .addFields(
                     { name: `${reaction.emoji} Used by`, value: user, inline: true },
                     { name: `Channel`, value: reaction.message.channel, inline: true },
-                    { name: `Receiver Information`, value: `${reaction.message.author}\n${reaction.message.author.tag}\nID: ${reaction.message.author.id}`, inline: false })
+                    { name: `Receiver Information`, value: applicantUser ? `${applicantUser}\n${applicantUser?.tag}\nID: ${applicantUser?.id}` : `Undefined User`, inline: false })
                 .setFooter(`LOG:ID ApplicationReactionJS_2`)
                 .setThumbnail(LaezariaIconURL)
                 .setTimestamp()
