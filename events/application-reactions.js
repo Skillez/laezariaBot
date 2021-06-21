@@ -72,7 +72,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
 
                         let botLogChannel = bot.channels.cache.get(config.botlogs.channelID);
                         if (botLogChannel) {
-                            let NayMessageFunc = `${user}, attention required!\n―――――――――――――――――\nIt looks like you've **REJECTED** this application!\n${reaction.message.url}\n\n**Target: ${applicantUser}**\n${applicantUser.tag}\nID: ${applicantUser.id}\n` + "```Please, confirm that the action is intended.```\n✅ Sends a reject message to the target user\n❌ closes this menu if that was a misclick (the bot will not send any messages)";
+                            let NayMessageFunc = `${user}, attention required!\n―――――――――――――――――\nIt looks like you've **REJECTED** this application!\n${reaction.message.url}\n\n**Target: ${applicantUser ? `${applicantUser}**\n${applicantUser?.tag}\nID: ${applicantUser?.id}\n` : `@Unknown User** (probably left the server)\n`}` + "```Please, confirm that the action is intended.```\n✅ Sends a reject message to the target user\n❌ closes this menu if that was a misclick (the bot will not send any messages)";
                             return botLogChannel.send(NayMessageFunc).then((message) => applicationVoteFinished(reaction, message, user, applicantGuildMember, applicantUser));
                         } else {
                             errorLog(`application-reactions.js:3 messageReactionAdd Event\nbotLogChannel not found.`, undefined);
@@ -342,7 +342,7 @@ bot.on('messageReactionAdd', async (reaction, user) => {
                     return sendEmbedLog(member_role_log_confirmation, config.botlogs.channelID, 'Laezaria Bot - Logs');
                 }
             } else { // if applicantGuildMember is not found
-                return ReactAuthor.send(`❌ There is an error with your recent activity!\n\nI couldn't add **${role2add.name}** role to ${applicantUser.tag} and you have do that manually if possible.\nPlease, check out the <#${config.botlogs.channelID}> for more information!`)
+                return ReactAuthor.send(`❌ There is an error with your recent activity!\n\nI couldn't add **${role2add.name}** role to ${applicantUser?.tag} and you have do that manually if possible.\nPlease, check out the <#${config.botlogs.channelID}> for more information!`)
                     .catch(error => errorLog(`application-reactions.js:3 addUserRole()\nI cannot send the message to the ReactAuthor.`, error))
                     .then(() => {
 
