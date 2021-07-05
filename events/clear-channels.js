@@ -1,4 +1,4 @@
-const { bot, errorLog } = require('../app');
+const { bot, errorLog } = require('../laezariaBot');
 const config = require("../bot-settings.json");
 
 //////////////////////////////////////////////////////////////////////////////////////////////

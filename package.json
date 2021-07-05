@@ -1,14 +1,14 @@
 {
   "name": "laezariae-bot",
-  "version": "1.0.0",
+  "version": "1.6.5",
   "description": "Private discord bot for Laezaria",
-  "main": "app.js",
+  "main": "laezariaBot.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Skillez/laezariaBot.git"
   },
   "scripts": {
-    ".": "node app.js --trace-warnings"
+    ".": "node laezariaBot.js --trace-warnings"
   },
   "keywords": [],
   "author": "Skillez",
@@ -18,7 +18,7 @@
   },
   "homepage": "https://github.com/Skillez/laezariaBot#readme",
   "dependencies": {
-    "canvas": "^2.7.0",
+    "canvas": "^2.8.0",
     "console-stamp": "^3.0.2",
     "discord.js": "^12.5.3",
     "google-spreadsheet": "^3.1.15",

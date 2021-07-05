@@ -1,4 +1,4 @@
-const { bot, Discord, errorLog, LaezariaIconURL, sendEmbedLog } = require('../app');
+const { bot, Discord, errorLog, LaezariaIconURL, sendEmbedLog } = require('../laezariaBot');
 const config = require("../bot-settings.json");
 const cron = require('node-cron');
 const reactsAmount = 15;

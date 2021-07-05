@@ -1,4 +1,4 @@
-const { bot, Discord, sendEmbedLog, embedColors, LaezariaIconURL, BotVersion, errorLog } = require('../app');
+const { bot, Discord, sendEmbedLog, embedColors, LaezariaIconURL, BotVersion, errorLog } = require('../laezariaBot');
 const config = require("../bot-settings.json");
 const fs = require("fs");
 

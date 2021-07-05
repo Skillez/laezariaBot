@@ -1,6 +1,6 @@
 const config = require("../bot-settings.json");
 const fs = require('fs');
-const { embedMessage, errorLog } = require("../app");
+const { embedMessage, errorLog } = require("../laezariaBot");
 
 module.exports.help = {
     name: "rank",

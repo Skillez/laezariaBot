@@ -1,6 +1,6 @@
 const config = require("../bot-settings.json");
 const fs = require('fs');
-const { Discord, embedColors, errorLog, sendEmbedLog, LaezariaIconURL, embedMessage } = require("../app");
+const { Discord, embedColors, errorLog, sendEmbedLog, LaezariaIconURL, embedMessage } = require("../laezariaBot");
 
 module.exports.help = {
     name: "points",

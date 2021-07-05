@@ -1,4 +1,4 @@
-const { bot, removeUserLastMessage, errorLog } = require('../app');
+const { bot, removeUserLastMessage, errorLog } = require('../laezariaBot');
 const config = require("../bot-settings.json");
 
 //////////////////////////////////////////////////////////////////////////////////////////////

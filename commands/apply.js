@@ -1,4 +1,4 @@
-const { Discord, LaezariaIconURL, errorLog, removeUserLastMessage, embedColors, botReply, embedMessage, getEmoji, sendEmbedLog } = require('../app');
+const { Discord, LaezariaIconURL, errorLog, removeUserLastMessage, embedColors, botReply, embedMessage, getEmoji, sendEmbedLog } = require('../laezariaBot');
 const config = require("../bot-settings.json");
 
 module.exports.help = {

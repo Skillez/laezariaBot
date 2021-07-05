@@ -1,4 +1,4 @@
-const { bot, errorLog } = require('../app');
+const { bot, errorLog } = require('../laezariaBot');
 const fs = require('fs');
 const cron = require('node-cron');
 

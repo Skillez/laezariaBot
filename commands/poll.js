@@ -1,5 +1,5 @@
 const config = require("../bot-settings.json");
-const { Discord, embedColors, emojiCharacters, LaezariaIconURL, botReply } = require("../app");
+const { Discord, embedColors, emojiCharacters, LaezariaIconURL, botReply } = require("../laezariaBot");
 
 module.exports.help = {
     name: "poll",

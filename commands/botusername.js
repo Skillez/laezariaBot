@@ -1,4 +1,4 @@
-const { errorLog } = require('../app');
+const { errorLog } = require('../laezariaBot');
 const config = require("../bot-settings.json");
 
 module.exports.help = {

@@ -1,4 +1,4 @@
-const { bot, Discord } = require('../app');
+const { bot, Discord } = require('../laezariaBot');
 const config = require("../bot-settings.json");
 
 // const fs = require('fs');

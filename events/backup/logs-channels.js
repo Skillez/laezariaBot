@@ -1,4 +1,4 @@
-const { bot, Discord, LogsWebhook, ownerDM } = require('../app');
+const { bot, Discord, LogsWebhook, ownerDM } = require('../laezariaBot');
 const config = require("../bot-settings.json");
 
 //////////////////////////////////////////////////////////////////////////////////////////////

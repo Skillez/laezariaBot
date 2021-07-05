@@ -1,4 +1,4 @@
-const { bot } = require('../app');
+const { bot } = require('../laezariaBot');
 const config = require("../bot-settings.json");
 
 //////////////////////////////////////////////////////////////////////////////////////////////

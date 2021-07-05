@@ -1,4 +1,4 @@
-const { Discord, errorLog } = require('../app');
+const { Discord, errorLog } = require('../laezariaBot');
 const config = require("../bot-settings.json");
 
 module.exports.help = {

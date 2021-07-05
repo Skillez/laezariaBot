@@ -1,4 +1,4 @@
-const { bot, Discord, sendEmbedLog, LaezariaIconURL, errorLog } = require('../app');
+const { bot, Discord, sendEmbedLog, LaezariaIconURL, errorLog } = require('../laezariaBot');
 const config = require("../bot-settings.json");
 
 const { google } = require('googleapis');
